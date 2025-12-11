@@ -215,6 +215,12 @@
                     <span class="font-semibold ml-2 hidden lg:inline">Post</span>
                 </button>
             </div>
+
+            <!-- Seetings -->
+            <button onclick="changeView('settings')" class="nav-link mt-auto mb-2 flex items-center justify-center lg:justify-start p-3 rounded-xl hover:bg-hover-bg text-secondary hover:text-primary w-12 h-12 lg:w-full lg:h-auto transition-all duration-200">
+                <i data-lucide="settings" class="w-6 h-6"></i>
+                <span class="font-medium ml-3 hidden lg:inline">Settings</span>
+            </button>
             
             <!-- Theme Toggle - Desktop -->
             <button onclick="toggleTheme()" class="nav-link mt-auto mb-4 flex items-center justify-center lg:justify-start p-3 rounded-xl hover:bg-hover-bg text-secondary hover:text-primary w-12 h-12 lg:w-full lg:h-auto">
@@ -274,7 +280,7 @@
                                     <span class="text-xs mt-1 text-secondary text-center">User 3</span>
                                 </div>
                             </div>
-                            <button onclick="loadMoreStories()" class="w-full mt-4 text-primary text-sm font-medium p-1 hover:bg-hover-bg rounded-lg">Load More Stories</button>
+                            <div id="story-sentinel" class="w-4 h-full flex-shrink-0"></div>
                         </div>
                     </div>
 
@@ -347,14 +353,14 @@
                         </div>
                     </div>
 
-                    <!-- Load More Posts Button -->
-                    <button onclick="loadMorePosts()" class="w-full py-2 border border-app text-secondary font-medium rounded-xl hover:bg-hover-bg transition-colors duration-200 mt-4">
-                        Load More Posts
-                    </button>
+                    <!-- Load More Posts Tripwires -->
+                    <div id="post-sentinel" class="h-10 w-full flex items-center justify-center p-4">
+                        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                    </div>
 
                 </div>
 
-                <!-- 3. NOTIFICATIONS VIEW (New View) -->
+                <!-- 3. NOTIFICATIONS VIEW -->
                 <div id="notificationsView" class="view-content hidden">
                     <div class="bg-surface p-6 rounded-xl shadow-md max-w-lg mx-auto transition-colors duration-300 border border-app">
                         <h2 class="text-2xl font-bold text-main mb-4">Notifications</h2>
@@ -385,7 +391,10 @@
                                 <i data-lucide="chevron-left" class="w-6 h-6"></i>
                             </button>
                             <h2 class="text-2xl font-bold text-main">Profile</h2>
-                            <div class="w-6 h-6"></div> 
+                            <button onclick="changeView('settings')" class="text-secondary hover:text-primary p-2 rounded-full hover:bg-hover-bg transition-all duration-200">
+                                <i data-lucide="settings" class="w-6 h-6"></i>
+                            </button>
+                            <!-- <div class="w-6 h-6"></div>  -->
                         </div>
 
                         <!-- User Info -->
@@ -440,7 +449,91 @@
                         </div>
                     </div>
                 </div>
-                
+                <!-- Seetings -->
+                <div id="settingsView" class="view-content hidden">
+                    <div class="bg-surface p-6 rounded-xl shadow-md max-w-lg mx-auto transition-colors duration-300 border border-app">
+                                
+                        <div class="flex items-center mb-6">
+                            <button onclick="changeView('profile')" class="mr-4 text-secondary hover:text-primary md:hidden">
+                                <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                            </button>
+                            <h2 class="text-2xl font-bold text-main">Settings</h2>
+                        </div>
+
+                        <div class="space-y-6">
+                                    
+                            <div>
+                                <h3 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2">Account</h3>
+                                <div class="bg-bg rounded-xl overflow-hidden border border-app">
+                                    <button class="w-full flex items-center justify-between p-4 hover:bg-hover-bg transition-colors border-b border-app text-main text-left">
+                                        <div class="flex items-center">
+                                            <i data-lucide="user" class="w-5 h-5 mr-3 text-secondary"></i>
+                                            <span>Personal Information</span>
+                                        </div>
+                                        <i data-lucide="chevron-right" class="w-4 h-4 text-secondary"></i>
+                                    </button>
+                                    <button class="w-full flex items-center justify-between p-4 hover:bg-hover-bg transition-colors border-b border-app text-main text-left">
+                                        <div class="flex items-center">
+                                             <i data-lucide="lock" class="w-5 h-5 mr-3 text-secondary"></i>
+                                            <span>Privacy & Security</span>
+                                        </div>
+                                        <i data-lucide="chevron-right" class="w-4 h-4 text-secondary"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2">Preferences</h3>
+                                <div class="bg-bg rounded-xl overflow-hidden border border-app">
+                                    <button class="w-full flex items-center justify-between p-4 hover:bg-hover-bg transition-colors border-b border-app text-main text-left">
+                                        <div class="flex items-center">
+                                            <i data-lucide="bell" class="w-5 h-5 mr-3 text-secondary"></i>
+                                            <span>Notifications</span>
+                                        </div>
+                                        <div class="w-10 h-6 bg-primary rounded-full relative">
+                                            <div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+                                        </div>
+                                    </button>
+                                    <button onclick="toggleTheme()" class="w-full flex items-center justify-between p-4 hover:bg-hover-bg transition-colors text-main text-left">
+                                        <div class="flex items-center">
+                                            <i data-lucide="moon" class="w-5 h-5 mr-3 text-secondary"></i>
+                                            <span>Dark Mode</span>
+                                        </div>
+                                        <i data-lucide="toggle-right" class="w-5 h-5 text-secondary"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2">Community</h3>
+                                <div class="bg-bg rounded-xl overflow-hidden border border-app">
+                                    <button class="w-full flex items-center justify-between p-4 hover:bg-hover-bg transition-colors border-b border-app text-main text-left">
+                                        <div class="flex items-center">
+                                            <i data-lucide="file-text" class="w-5 h-5 mr-3 text-secondary"></i>
+                                            <span>Community Guidelines</span>
+                                        </div>
+                                        <i data-lucide="external-link" class="w-4 h-4 text-secondary"></i>
+                                    </button>
+                                    <button class="w-full flex items-center justify-between p-4 hover:bg-hover-bg transition-colors text-main text-left">
+                                        <div class="flex items-center">
+                                            <i data-lucide="help-circle" class="w-5 h-5 mr-3 text-secondary"></i>
+                                            <span>Help & Support</span>
+                                        </div>
+                                        <i data-lucide="chevron-right" class="w-4 h-4 text-secondary"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button class="w-full p-4 mt-4 flex items-center justify-center text-red-500 bg-bg hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors font-medium border border-app">
+                                <i data-lucide="log-out" class="w-5 h-5 mr-2"></i>
+                                Log Out
+                            </button>
+
+                            <p class="text-center text-xs text-secondary mt-6">Version 1.0.0 • ProjectZG</p>
+
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
 
@@ -683,6 +776,70 @@
             }
             lucide.createIcons();
         }
+        // --- Infinite Scroll Setup ---
+        function setupInfiniteScroll() {
+            const options = {
+                root: null, 
+                rootMargin: '100px', 
+                threshold: 0.1
+            };
+
+            // 1. Observer for POSTS (Vertical)
+            const postObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            loadMorePosts();
+
+                            const feed = document.getElementById('post-feed');
+                            const sentinel = document.getElementById('post-sentinel');
+
+                            postObserver.unobserve(entry.target);
+
+                            feed.appendChild(sentinel);
+
+                            postObserver.observe(sentinel);
+                        }, 500);
+                    }
+                });
+            }, options);
+
+            // Start watching the post sentinel
+            const postSentinel = document.getElementById('post-sentinel');
+            if (postSentinel) postObserver.observe(postSentinel);
+
+            // 2. Observer for STORIES (Horizontal)
+            const storyObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                           loadMoreStories();
+                           storyObserver.unobserve(entry.target);
+                           
+                           // Move the sentinel to the very end of the list
+                           const list = document.getElementById('story-list');
+                           const sentinel = document.getElementById('story-sentinel');
+                           list.appendChild(sentinel);
+                           
+                           storyObserver.observe(sentinel);
+                        }, 500);
+                    }
+                });
+            }, { ...options, root: document.getElementById('story-list-container') }); // Different root for horizontal
+
+            // Start watching the story sentinel
+            const storySentinel = document.getElementById('story-sentinel');
+            if (storySentinel) storyObserver.observe(storySentinel);
+        }
+        window.onload = () => {
+            setTheme(getPreferredTheme());
+            changeView(currentPage);
+            setupActionListeners();
+            setNotificationBadge(true);
+            
+            // ACTIVATE INFINITE SCROLL
+            setupInfiniteScroll(); 
+        };
         
         // --- Event Listener Setup ---
         function setupActionListeners() {
