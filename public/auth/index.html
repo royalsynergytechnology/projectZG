@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Us - ProjectZG</title>
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="16x16" href="../favicon/icons8-dev-community-color-16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../favicon/icons8-dev-community-color-32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="../favicon/icons8-dev-community-color-48.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="../favicon/icons8-dev-community-color-96.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../favicon/icons8-dev-community-color-180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="../favicon/icons8-dev-community-color-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="../favicon/icons8-dev-community-color-512.png">
+    <meta name="msapplication-TileImage" content="../favicon/icons8-dev-community-color-144.png">
+    <meta name="msapplication-TileColor" content="#5e3fe2">
+    <!-- Use Font Awesome for Social Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,800&display=swap" rel="stylesheet">
+    <!-- Custom CSS for Animations -->
+    <link rel="stylesheet" href="../css/auth.css">
+    <link rel="stylesheet" href="../css/ui/toast.css">
+    <link rel="stylesheet" href="../css/ui/header.css">
+    <link rel="stylesheet" href="../css/ui/footer.css">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+        }
+    </style>
+</head>
+<body class="auth-page flex justify-center items-center flex-col min-h-screen relative overflow-hidden">
+
+    <!-- Gradient Overlay -->
+    <div class="bg-gradient-overlay"></div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <div class="container bg-surface rounded-2xl shadow-2xl relative overflow-hidden w-full max-w-3xl min-h-[480px] z-10" id="container">
+        
+        <!-- Sign Up Form -->
+        <div class="form-container sign-up-container bg-surface flex flex-col items-center justify-center h-full px-12 text-center">
+            <form action="#" class="w-full h-full flex flex-col items-center justify-center bg-surface">
+                <h1 class="font-bold text-3xl m-0 text-gray-800">Create Account</h1>
+                <div class="social-container my-5">
+                    <a href="#" id="signup-facebook" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" id="signup-google" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-google-plus-g"></i></a>
+                    <a href="#" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+                <span class="text-xs text-gray-500 mb-4">or use your email for registration</span>
+                <input type="text" id="signup-username" placeholder="Username" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" autocomplete="username" required minlength="3" maxlength="30" pattern="^[a-zA-Z0-9_]+$" title="Username can only contain letters, numbers, and underscores" />
+                <input type="email" id="signup-email" placeholder="Email" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" autocomplete="email" required />
+                <input type="password" id="signup-password" placeholder="Password" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" autocomplete="new-password" required minlength="8" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':&quot;\\|,.<>\/?]).{8,}$" title="Password must be at least 8 characters with lowercase, uppercase, number, and symbol" />
+                <button id="btn-signup" class="mt-4 rounded-full border border-primary bg-primary text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none">Sign Up</button>
+                <div class="mt-4 md:hidden">
+                    <p class="text-xs text-secondary">Already have an account? <a href="#" id="mobileSignIn" class="text-primary font-bold">Sign In</a></p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sign In Form -->
+        <div class="form-container sign-in-container bg-surface flex flex-col items-center justify-center h-full px-12 text-center">
+            <form action="#" class="w-full h-full flex flex-col items-center justify-center bg-surface">
+                <h1 class="font-bold text-3xl m-0 text-gray-800">Sign in</h1>
+                <div class="social-container my-5">
+                    <a href="#" id="signin-facebook" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" id="signin-google" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-google-plus-g"></i></a>
+                    <a href="#" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+                <span class="text-xs text-gray-500 mb-4">or use your account</span>
+                <input type="text" id="signin-identifier" placeholder="Email or Username" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" autocomplete="username email" required />
+                <input type="password" id="signin-password" placeholder="Password" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" autocomplete="current-password" required />
+                <a href="reset-password/" class="text-gray-800 text-sm no-underline my-4">Forgot your password?</a>
+                <button id="btn-signin" class="mt-2 rounded-full border border-primary bg-primary text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none">Sign In</button>
+                <div class="mt-4 md:hidden">
+                    <p class="text-xs text-secondary">Don't have an account? <a href="#" id="mobileSignUp" class="text-primary font-bold">Sign Up</a></p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Overlay -->
+        <div class="overlay-container">
+            <div class="overlay">
+                <div class="overlay-panel overlay-left text-white">
+                    <h1 class="font-bold text-3xl m-0 mb-4">Welcome Back!</h1>
+                    <p class="text-sm font-thin leading-5 tracking-wide mb-8">To keep connected with us please login</p>
+                    <button class="ghost mt-2 rounded-full border border-white bg-transparent text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none" id="signIn">Sign In</button>
+                </div>
+                <div class="overlay-panel overlay-right text-white">
+                    <h1 class="font-bold text-3xl m-0 mb-4">Hello, Friend!</h1>
+                    <p class="text-sm font-thin leading-5 tracking-wide mb-8">Enter your personal details and start journey with us</p>
+                    <button class="ghost mt-2 rounded-full border border-white bg-transparent text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none" id="signUp">Sign Up</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <script src="../js/ui/toast.js"></script>
+    <!-- Configuration (API URL) -->
+    <script src="../js/config.js"></script>
+    <!-- Toggle Logic -->
+    <script src="../js/auth.js"></script>
+    <!-- Header & Footer Layout -->
+    <script src="../js/ui/layout.js"></script>
+</body>
+</html>
