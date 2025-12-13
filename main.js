@@ -38,11 +38,11 @@ app.use(cors({
 app.use((req, res, next) => {
     res.setHeader('Content-Security-Policy', [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com", // Added unsafe-inline for onclick handlers
+        "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com https://vercel.live", // Added vercel.live
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
         "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
         "img-src 'self' data: https: blob:",
-        "connect-src 'self' https://*.supabase.co https://unpkg.com",
+        "connect-src 'self' https://*.supabase.co https://unpkg.com https://vercel.live", // Added vercel.live
         "frame-ancestors 'none'",
         "base-uri 'self'",
         "form-action 'self'"
@@ -62,7 +62,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 // Serve static files from 'public' directory
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Explicit root handler for Vercel
 app.get('/', (req, res) => {
