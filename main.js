@@ -85,6 +85,31 @@ app.get([
 ], authHandler);
 
 // API Routes
+app.get('/api/debug-paths', (req, res) => {
+    const fs = require('fs');
+
+    const listDir = (dir) => {
+        try {
+            return fs.readdirSync(dir).map(f => {
+                const fullPath = path.join(dir, f);
+                try {
+                    return fs.statSync(fullPath).isDirectory() ? { name: f, wrapper: listDir(fullPath) } : f;
+                } catch (e) { return f; }
+            });
+        } catch (e) {
+            return e.message;
+        }
+    };
+
+    res.json({
+        cwd: process.cwd(),
+        dirname: __dirname,
+        ls_cwd: listDir(process.cwd()),
+        ls_public: listDir(path.join(process.cwd(), 'public')),
+        ls_task: listDir('/var/task')
+    });
+});
+
 app.use('/api/auth', require('./routes/auth/index'));
 
 
