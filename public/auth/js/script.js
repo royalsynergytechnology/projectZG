@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('view-auth');
 
     // Access Redux Store and Actions (exposed globally in store.js)
-    const store = window.store;
+    const store = window['store'];
     const Actions = window.Actions;
 
     // Toast Helper
@@ -85,8 +85,10 @@ document.addEventListener('DOMContentLoaded', () => {
             document.cookie = `sb-access-token=${at}; path=/; max-age=3600; SameSite=Lax`;
             document.cookie = `sb-refresh-token=${rt}; path=/; max-age=2592000; SameSite=Lax`;
 
+            sessionToken = at; // Capture token
+
             window.history.replaceState(null, null, window.location.pathname);
-            checkAuthStatus(); // Re-verify
+            checkAuthStatus(at); // Re-verify with explicit token
             // Continue to routing logic so view is set correctly
         }
 
@@ -97,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
             store.dispatch(Actions.setView('reset-password'));
         } else if (path.includes('verify-email')) {
             store.dispatch(Actions.setView('verify-email'));
-        } else if (path.includes('onboarding') || hashParams.get('onboarding') === 'true' || hash === '#onboarding') {
+        } else if (path.includes('onboarding') || hashParams.get('onboarding') === 'true' || hash === '#onboarding' || searchParams.get('onboarding') === 'true') {
             store.dispatch(Actions.setView('onboarding'));
         } else {
             store.dispatch(Actions.setView('auth'));
@@ -107,16 +109,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function checkAuthStatus() {
+    async function checkAuthStatus(explicitToken = null) {
         try {
-            const res = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+            const headers = {};
+            if (explicitToken) {
+                headers['Authorization'] = `Bearer ${explicitToken}`;
+            }
+
+            const res = await fetch(`${API_URL}/auth/me`, {
+                credentials: 'include',
+                headers: headers
+            });
             if (res.ok) {
                 const data = await res.json();
                 if (data.user) {
                     store.dispatch(Actions.setUser(data.user));
                     // Redirect to home if on login page
-                    if (!window.location.pathname.includes('onboarding')) {
-                        if (store.getState().view === 'auth') {
+                    if (!window.location.pathname.includes('onboarding') && store.getState().view === 'auth') {
+                        // Double check we aren't supposed to be onboarding based on URL
+                        const search = new URLSearchParams(window.location.search);
+                        if (search.get('onboarding') !== 'true') {
                             window.location.href = '/';
                         }
                     }
@@ -285,8 +297,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (avatar) formData.append('avatar', avatar);
 
             try {
+                const headers = {};
+                if (sessionToken) {
+                    headers['Authorization'] = `Bearer ${sessionToken}`;
+                }
+
                 const res = await fetch(`${API_URL}/auth/onboarding`, {
                     method: 'POST',
+                    headers: headers,
                     body: formData
                 });
                 const data = await res.json();
@@ -303,7 +321,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- SOCIAL LOGIN ---
-    document.querySelectorAll('.social').forEach(btn => {
+    const socialBtns = document.querySelectorAll('.social');
+    socialBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             if (btn.id && btn.id.includes('google')) {

@@ -38,7 +38,7 @@ app.use(cors({
 app.use((req, res, next) => {
     res.setHeader('Content-Security-Policy', [
         "default-src 'self'",
-        "script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com", // Removed unsafe-inline
+        "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com", // Added unsafe-inline for onclick handlers
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
         "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
         "img-src 'self' data: https: blob:",
@@ -73,10 +73,10 @@ const authPagePath = path.join(__dirname, 'public/auth/index.html');
 const authHandler = (req, res) => res.sendFile(authPagePath);
 
 app.get([
-    '/auth',
-    '/reset-password',
-    '/verify-email',
-    '/onboarding'
+    '/auth', '/auth/*path',
+    '/reset-password', '/reset-password/*path',
+    '/verify-email', '/verify-email/*path',
+    '/onboarding', '/onboarding/*path'
 ], authHandler);
 
 // API Routes

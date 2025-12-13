@@ -26,7 +26,7 @@
         body { font-family: 'Montserrat', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-900 text-white flex justify-center items-center flex-col min-h-screen relative pt-[100px] pb-0 overflow-hidden">
+<body class="bg-gray-900 text-white flex justify-center items-center flex-col h-screen relative pt-20 pb-40 md:pt-0 md:pb-0 overflow-hidden">
 
     <!-- Gradient Overlay Background -->
     <div class="absolute inset-0 z-0 bg-linear-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]"></div>
@@ -37,7 +37,7 @@
     <div id="view-auth" class="auth-view active group hidden [&.active]:flex relative overflow-hidden w-full max-w-[768px] min-h-[480px] bg-white rounded-2xl shadow-2xl z-10 md:w-full md:max-w-full md:min-h-screen md:rounded-none md:shadow-none md:m-0">
         
         <!-- Sign Up Form -->
-        <div class="absolute top-0 h-full transition-all duration-800 ease-in-out left-0 w-1/2 opacity-0 z-10 group-[.right-panel-active]:translate-x-full group-[.right-panel-active]:opacity-100 group-[.right-panel-active]:z-50 group-[.right-panel-active]:animate-show md:w-full md:static md:opacity-100 md:z-10 md:group-[.right-panel-active]:translate-x-0 md:group-[.right-panel-active]:hidden">
+        <div class="absolute top-0 h-full left-0 w-full opacity-0 z-0 transition-all duration-500 ease-in-out group-[.right-panel-active]:opacity-100 group-[.right-panel-active]:z-20 md:w-1/2 md:opacity-0 md:z-10 md:group-[.right-panel-active]:translate-x-full md:group-[.right-panel-active]:opacity-100 md:group-[.right-panel-active]:z-50 md:group-[.right-panel-active]:animate-show">
             <form action="#" class="bg-white flex flex-col items-center justify-center h-full px-12 text-center text-gray-800">
                 <h1 class="font-bold text-3xl m-0">Create Account</h1>
                 <div class="flex my-5">
@@ -50,26 +50,14 @@
                 <input type="email" id="signup-email" placeholder="Email" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" autocomplete="email" required />
                 <input type="password" id="signup-password" placeholder="Password" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" autocomplete="new-password" required minlength="8" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':&quot;\\|,.<>\/?]).{8,}$" title="Password must be at least 8 characters with lowercase, uppercase, number, and symbol" />
                 <button id="btn-signup" class="mt-4 rounded-full border border-primary bg-primary text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none hover:opacity-90">Sign Up</button>
-                <div class="mt-4 hidden md:block">
+                <div class="mt-4 md:hidden">
                     <p class="text-xs text-secondary">Already have an account? <a href="#" id="mobileSignIn" class="text-primary font-bold">Sign In</a></p>
                 </div>
             </form>
         </div>
 
         <!-- Sign In Form -->
-        <div class="absolute top-0 h-full transition-all duration-800 ease-in-out left-0 w-1/2 z-20 group-[.right-panel-active]:translate-x-full group-[.right-panel-active]:opacity-0 group-[.right-panel-active]:z-10 md:w-full md:static md:opacity-100 md:z-10 md:group-[.right-panel-active]:translate-x-0 md:group-[.right-panel-active]:hidden md:hidden md:[&.active]:flex">
-             <!-- Note: Mobile logic needs to be handled carefully. The original CSS just stacked them and used opacity. 
-                  My Tailwind translation: 
-                  - Desktop: Absolute positioning + transforms.
-                  - Mobile (md): Static positioning, visibility toggled via JS adding 'right-panel-active' which triggers hidden/block logic or opacity.
-                  The original CSS for mobile: .sign-in-container { width: 100% } .right-panel-active .sign-in-container { opacity: 0; z-index: 1; transform: translateX(0); }
-                  Wait, 'md' in Tailwind is min-width 768px. My mobile styles should be default or max-md.
-                  Correcting: Standard 'md' usage means "desktop".
-                  Let's stick to the previous desktop-first logic but refined:
-                  Mobile (< md):
-                  - w-full, static, p-6
-                  - right-panel-active -> hidden/block swap logic or z-index swap
-             -->
+        <div class="absolute top-0 h-full left-0 w-full opacity-100 z-20 transition-all duration-500 ease-in-out group-[.right-panel-active]:opacity-0 group-[.right-panel-active]:z-0 md:w-1/2 md:z-20 md:opacity-100 md:group-[.right-panel-active]:translate-x-full md:group-[.right-panel-active]:opacity-0 md:group-[.right-panel-active]:z-10">
             <form action="#" class="bg-white flex flex-col items-center justify-center h-full px-12 text-center text-gray-800">
                 <h1 class="font-bold text-3xl m-0">Sign in</h1>
                 <div class="flex my-5">
@@ -82,14 +70,14 @@
                 <input type="password" id="signin-password" placeholder="Password" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" autocomplete="current-password" required />
                 <a href="/auth/reset-password" id="forgot-password-link" class="text-gray-800 text-sm no-underline my-4 hover:underline">Forgot your password?</a>
                 <button id="btn-signin" class="mt-2 rounded-full border border-primary bg-primary text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none hover:opacity-90">Sign In</button>
-                <div class="mt-4 hidden md:block">
+                <div class="mt-4 md:hidden">
                     <p class="text-xs text-secondary">Don't have an account? <a href="#" id="mobileSignUp" class="text-primary font-bold">Sign Up</a></p>
                 </div>
             </form>
         </div>
 
         <!-- Overlay -->
-        <div class="absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-800 ease-in-out z-100 group-[.right-panel-active]:-translate-x-full md:hidden">
+        <div class="hidden md:block absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-800 ease-in-out z-100 group-[.right-panel-active]:-translate-x-full">
             <div class="bg-linear-to-r from-primary to-purple-500 bg-no-repeat bg-cover text-white relative -left-full h-full w-[200%] transform transition-transform duration-800 ease-in-out group-[.right-panel-active]:translate-x-1/2">
                 <div class="absolute flex items-center justify-center flex-col px-10 text-center top-0 h-full w-1/2 transform translate-x-[-20%] transition-transform duration-800 ease-in-out group-[.right-panel-active]:translate-x-0">
                     <h1 class="font-bold text-3xl m-0 mb-4">Welcome Back!</h1>
@@ -165,7 +153,7 @@
             <div class="absolute inset-0 bg-transparent z-0"></div> 
             
             <!-- Step 1: Username -->
-            <div class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-10 bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl transform translate-x-full opacity-0 transition-all duration-500 ease-in-out [&.active]:translate-x-0 [&.active]:opacity-100" id="step-1">
+            <div class="swipe-card absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-10 bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl transform translate-x-full opacity-0 transition-all duration-500 ease-in-out [&.active]:translate-x-0 [&.active]:opacity-100" id="step-1">
                 <div class="flex gap-3 mb-8">
                     <div class="w-8 h-2.5 rounded-full bg-primary transition-all duration-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
                 </div>
@@ -184,7 +172,7 @@
             </div>
 
             <!-- Step 2: Gender -->
-            <div class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-10 bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl transform translate-x-full opacity-0 transition-all duration-500 ease-in-out [&.active]:translate-x-0 [&.active]:opacity-100" id="step-2">
+            <div class="swipe-card absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-10 bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl transform translate-x-full opacity-0 transition-all duration-500 ease-in-out [&.active]:translate-x-0 [&.active]:opacity-100" id="step-2">
                 <div class="flex gap-3 mb-8">
                     <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-8 h-2.5 rounded-full bg-primary transition-all duration-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
                 </div>
@@ -206,7 +194,7 @@
             </div>
 
             <!-- Step 3: Avatar (Optional) -->
-            <div class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-10 bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl transform translate-x-full opacity-0 transition-all duration-500 ease-in-out [&.active]:translate-x-0 [&.active]:opacity-100" id="step-3">
+            <div class="swipe-card absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-10 bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl transform translate-x-full opacity-0 transition-all duration-500 ease-in-out [&.active]:translate-x-0 [&.active]:opacity-100" id="step-3">
                 <div class="flex gap-3 mb-8">
                     <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-8 h-2.5 rounded-full bg-primary transition-all duration-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
                 </div>
@@ -229,7 +217,7 @@
             </div>
 
             <!-- Step 4: Password -->
-            <div class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-10 bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl transform translate-x-full opacity-0 transition-all duration-500 ease-in-out [&.active]:translate-x-0 [&.active]:opacity-100" id="step-4">
+            <div class="swipe-card absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-10 bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl transform translate-x-full opacity-0 transition-all duration-500 ease-in-out [&.active]:translate-x-0 [&.active]:opacity-100" id="step-4">
                 <div class="flex gap-3 mb-8">
                     <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-8 h-2.5 rounded-full bg-primary transition-all duration-300"></div>
                 </div>
@@ -261,7 +249,7 @@
     <!-- Redux Store -->
     <script src="/js/store.js?v=8"></script>
     <!-- Toggle Logic & Auth Logic -->
-    <script src="/js/auth.js?v=8"></script>
+    <script src="/auth/js/script.js?v=9"></script>
     <!-- Header & Footer Layout -->
     <script src="/js/ui/layout.js"></script>
 

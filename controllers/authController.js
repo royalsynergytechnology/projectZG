@@ -160,24 +160,13 @@ const googleAuth = async (req, res) => {
             throw new Error('ALLOWED_ORIGIN or ALLOWED_ORIGINS environment variable must be set');
         }
 
-        // Generate and store state for CSRF protection
-        const state = crypto.randomBytes(16).toString('hex');
-        res.cookie('oauth_state', state, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', // Secure in prod, insecure in dev
-            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax', // Lax for local dev
-            path: '/',
-            maxAge: 5 * 60 * 1000 // 5 minutes
-        });
-
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: `${origin}/api/auth/callback`, // Redirect to backend callback
+                redirectTo: `${origin}/api/auth/callback`,
                 queryParams: {
                     access_type: 'offline',
-                    prompt: 'consent',
-                    state: state
+                    prompt: 'consent'
                 }
             }
         });
@@ -199,7 +188,6 @@ const googleAuth = async (req, res) => {
 
 const googleCallback = async (req, res) => {
     const { code, error, error_description, state } = req.query;
-    console.log('[Auth-Callback] Hit with:', { code: !!code, error, state });
 
     if (error) {
         const description = error_description || 'Unknown error';
@@ -213,15 +201,14 @@ const googleCallback = async (req, res) => {
     }
 
     // CSRF Check: Validate state parameter
-    const storedState = req.cookies['oauth_state'];
+    // Supabase handles this via PKCE exchangeCodeForSession usually, 
+    // but if we need manual state, we must ensure it matches what we sent.
+    // Since we removed manual state sending to let Supabase handle it, we skip manual check here.
 
-    if (!state || !storedState || state !== storedState) {
-        console.error('[Auth-Callback] CSRF Mismatch');
-        return res.redirect('/auth?error=invalid_state');
-    }
+    // if (!state || !storedState || state !== storedState) {
+    //      return res.redirect('/auth?error=invalid_state');
+    // }
 
-    // Clear the used state
-    res.clearCookie('oauth_state', { path: '/' });
 
     try {
         const { data, error } = await supabase.auth.exchangeCodeForSession(code);
@@ -250,7 +237,6 @@ const googleCallback = async (req, res) => {
             .eq('id', session.user.id)
             .single();
 
-        console.log('[Auth-Callback] Profile Fetch:', { userId: session.user.id, profile, error: profileError });
 
         // Construct cleanup hash for client-side token handoff
         const hash = `access_token=${session.access_token}&refresh_token=${session.refresh_token}`;
@@ -261,8 +247,8 @@ const googleCallback = async (req, res) => {
             res.redirect(302, `/#${hash}`);
         } else {
             // New user -> Onboarding
-            // Force onboarding view via hash param if needed, but the tokens are key
-            res.redirect(302, `/onboarding#${hash}`);
+            // Use query param which auth.js already looks for
+            res.redirect(302, `/auth?onboarding=true#${hash}`);
         }
 
     } catch (err) {

@@ -1,7 +1,7 @@
 /**
  * Toast Notification System
  * Usage:
- *   1. Include toast.css in your HTML
+ *   1. Ensure Tailwind CSS is loaded (global.css)
  *   2. Include this script
  *   3. Add: <div id="toast-container" class="toast-container"></div>
  *   4. Call: Toast.success('Message'), Toast.error('Message'), etc.
