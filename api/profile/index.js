@@ -60,4 +60,10 @@ router.get('/profile/:username', guestMiddleware, profile.getPublicProfile);
 // GET /api/profile/:username/posts
 router.get('/profile/:username/posts', guestMiddleware, profile.getUserPosts);
 
+// GET /api/notifications
+router.get('/notifications', authMiddleware, profile.getNotifications);
+
+// GET /api/config
+router.get('/config', profile.getConfig);
+
 module.exports = router;

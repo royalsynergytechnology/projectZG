@@ -4,8 +4,10 @@ const { createServerClient } = require('@supabase/ssr');
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 let supabase = null;
+let supabaseAdmin = null;
 let clientInitError = null;
 
 if (!supabaseUrl || !supabaseKey) {
@@ -13,16 +15,26 @@ if (!supabaseUrl || !supabaseKey) {
     if (!supabaseUrl) missing.push('SUPABASE_URL');
     if (!supabaseKey) missing.push('SUPABASE_ANON_KEY');
     clientInitError = `Missing required environment variables: ${missing.join(', ')}`;
-    console.error(`CRITICAL: ${clientInitError}`); // Log to Vercel console
+    console.error(`CRITICAL: ${clientInitError}`);
 } else {
     try {
-        // Singleton for generic server-side ops (non-PKCE dependent or manual token handling)
+        // Singleton for generic server-side ops
         supabase = createClient(supabaseUrl, supabaseKey, {
             auth: {
                 flowType: 'pkce',
                 detectSessionInUrl: false,
             }
         });
+
+        // Admin Client (if key available)
+        if (supabaseServiceKey) {
+            supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+                auth: {
+                    autoRefreshToken: false,
+                    persistSession: false
+                }
+            });
+        }
     } catch (e) {
         clientInitError = `Supabase initialization failed: ${e.message}`;
         console.error(clientInitError);
@@ -71,4 +83,4 @@ const createContextClient = (req, res) => {
     });
 };
 
-module.exports = { supabase, createAuthenticatedClient, createContextClient };
+module.exports = { supabase, supabaseAdmin, createAuthenticatedClient, createContextClient };

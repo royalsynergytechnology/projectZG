@@ -539,3 +539,32 @@ exports.getUserPosts = async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch user posts' });
     }
 };
+// Fetch User Notifications
+exports.getNotifications = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { data: notifications, error } = await supabase
+            .from('notifications')
+            .select(`
+                *,
+                actor:profiles!notifications_actor_id_fkey(username, avatar_url)
+            `)
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(50);
+
+        if (error) throw error;
+        res.json({ notifications });
+    } catch (err) {
+        console.error('Fetch Notifications Error:', err);
+        res.status(500).json({ error: 'Failed to fetch notifications' });
+    }
+};
+
+// Get Public Config
+exports.getConfig = (req, res) => {
+    res.json({
+        supabaseUrl: process.env.SUPABASE_URL,
+        supabaseKey: process.env.SUPABASE_ANON_KEY
+    });
+};

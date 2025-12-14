@@ -10,6 +10,9 @@ const PORT = process.env.PORT || 3000;
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
+// Trust Proxy for Vercel (Ensure req.protocol is 'https')
+app.enable('trust proxy');
+
 // CORS configuration - restrict to your domain in production
 app.use(cors({
     origin: (origin, callback) => {

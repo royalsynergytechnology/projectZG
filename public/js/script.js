@@ -38,6 +38,24 @@ function toggleTheme() {
 // --- API Helpers ---
 const API_URL = (typeof Config !== 'undefined') ? Config.API_URL : '/api';
 
+let supabase = null;
+
+async function initializeSupabase() {
+    try {
+        const res = await fetch(`${API_URL}/config`);
+        if (!res.ok) throw new Error('Failed to load config');
+        const config = await res.json();
+
+        if (typeof createClient !== 'undefined') {
+            supabase = createClient(config.supabaseUrl, config.supabaseKey);
+        } else if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+            supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
+        }
+    } catch (err) {
+        console.error('Supabase Init Error:', err);
+    }
+}
+
 function getHeaders() {
     const token = localStorage.getItem('sb-access-token');
     return {
@@ -738,7 +756,10 @@ function changeView(viewId) {
     const target = document.getElementById(viewId + 'View');
     if (target) target.classList.remove('hidden');
 
-    if (viewId === 'notifications') setNotificationBadge(false);
+    if (viewId === 'notifications') {
+        setNotificationBadge(false);
+        fetchNotifications();
+    }
     updateNavStyles(viewId);
 }
 
@@ -788,8 +809,112 @@ async function identifyCurrentUser() {
     return false;
 }
 
+// --- Notifications Logic ---
+async function fetchNotifications() {
+    try {
+        // Optimistic UI: If we already have a badge, ensure we clear it if viewed (logic later)
+        const response = await fetch(`${API_URL}/notifications`, { headers: getHeaders() });
+        if (response.ok) {
+            const { notifications } = await response.json();
+            renderNotifications(notifications);
+        }
+    } catch (err) {
+        console.error('Error loading notifications:', err);
+    }
+}
+
+function renderNotifications(notifications) {
+    const list = document.getElementById('notification-list');
+    if (!list) return; // Might be in another view template
+
+    // If we have a dedicated notifications view container, render there
+    // For this app, let's assume 'notificationsView' has a container
+    const container = document.querySelector('#notificationsView .space-y-4');
+    if (!container) return;
+
+    if (!notifications || notifications.length === 0) {
+        container.innerHTML = '<p class="text-center text-secondary py-8">No notifications yet.</p>';
+        return;
+    }
+
+    container.innerHTML = notifications.map(n => {
+        const actorName = n.actor ? n.actor.username : 'Someone';
+        const actorAvatar = n.actor && n.actor.avatar_url ? n.actor.avatar_url : 'https://placehold.co/40x40';
+        let text = '';
+        let icon = '';
+
+        switch (n.type) {
+            case 'like': text = `liked your post.`; icon = '<i data-lucide="heart" class="w-4 h-4 text-red-500 fill-current"></i>'; break;
+            case 'follow': text = `started following you.`; icon = '<i data-lucide="user-plus" class="w-4 h-4 text-primary"></i>'; break;
+            case 'comment': text = `commented on your post.`; icon = '<i data-lucide="message-circle" class="w-4 h-4 text-blue-500"></i>'; break;
+            case 'mention': text = `mentioned you in a post.`; icon = '<i data-lucide="at-sign" class="w-4 h-4 text-orange-500"></i>'; break;
+            default: text = `interacted with you.`; icon = '<i data-lucide="bell" class="w-4 h-4 text-secondary"></i>';
+        }
+
+        return `
+            <div class="flex items-center justify-between p-4 bg-surface rounded-xl border border-app hover:bg-hover-bg transition-colors">
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <img src="${actorAvatar}" class="w-10 h-10 rounded-full object-cover">
+                        <div class="absolute -bottom-1 -right-1 bg-surface rounded-full p-0.5 border border-app">
+                            ${icon}
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-sm text-main"><span class="font-bold">${actorName}</span> ${text}</p>
+                        <p class="text-xs text-secondary">${new Date(n.created_at).toLocaleDateString()}</p>
+                    </div>
+                </div>
+                ${!n.read ? '<div class="w-2 h-2 bg-primary rounded-full"></div>' : ''}
+            </div>
+        `;
+    }).join('');
+
+    lucide.createIcons();
+}
+
+function subscribeToNotifications() {
+    if (!currentUser) return;
+
+    // Ensure Supabase client is available globally (from script tag or module)
+    // Assuming 'supabase' is available from @supabase/supabase-js CDN or similar in window
+    if (typeof supabase === 'undefined') {
+        console.warn('Supabase client not found for Realtime');
+        return;
+    }
+
+    const channel = supabase
+        .channel('public:notifications')
+        .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${currentUser.id}`
+        }, payload => {
+            // Handle new notification
+
+            // 1. Show Toast
+            if (typeof Toast !== 'undefined') {
+                Toast.info("New Notification", "You have a new interaction!");
+            }
+
+            // 2. Update Grid/List if active
+            const container = document.querySelector('#notificationsView .space-y-4');
+            if (container && currentPage === 'notifications') {
+                fetchNotifications(); // Reload list
+            }
+
+            // 3. Show Badge
+            setNotificationBadge(true);
+        })
+        .subscribe();
+}
+
 // --- Initialization ---
 window.onload = async () => {
+    // Init Supabase
+    await initializeSupabase();
+
     setTheme(getPreferredTheme());
     changeView(currentPage);
 
@@ -807,22 +932,6 @@ window.onload = async () => {
 
     setupInfiniteScroll();
 
-    // 1. Always try to identify user first
-    await identifyCurrentUser();
-
-    // 2. Routing Logic
-    const urlParams = new URLSearchParams(window.location.search);
-    const userParam = urlParams.get('user');
-
-    if (userParam) {
-        // Shared Profile Link
-        loadPublicProfile(userParam);
-    } else if (currentUser) {
-        // Authenticated Home
-        renderProfileView(currentUser, true);
-        // We can fetch posts here if needed for profile view, 
-        // but 'feed' is default view so fetchFeed() handles main content.
-    }
     // else Guest Home (Feed only)
 
     fetchFeed();

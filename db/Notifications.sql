@@ -8,7 +8,6 @@ create table if not exists public.notifications (
   type text not null check (type in ('follow', 'like', 'comment', 'repost', 'message', 'mention')),
   actor_id uuid references public.profiles(id) on delete cascade,
   post_id uuid references public.posts(id) on delete cascade,
-  message_id uuid references public.messages(id) on delete cascade,
   read boolean default false,
   metadata jsonb default '{}'::jsonb, -- Flexible metadata for future extensibility (e.g. comment snippets)
   created_at timestamp with time zone default now()
@@ -47,12 +46,11 @@ create table if not exists public.notification_preferences (
   user_id uuid not null references public.profiles(id) on delete cascade,
   
   -- Push/In-App toggles
-  follow boolean default true,
-  like boolean default true,
-  comment boolean default true,
-  repost boolean default true,
-  message boolean default true,
-  mention boolean default true,
+  "follow" boolean default true,
+  "like" boolean default true,
+  "comment" boolean default true,
+  "repost" boolean default true,
+  "mention" boolean default true,
   
   updated_at timestamp with time zone default now(),
   created_at timestamp with time zone default now(),
@@ -171,21 +169,4 @@ create trigger on_repost_create_notification
   after insert on public.reactions
   for each row execute function create_repost_notification();
 
--- Message Notification
-create or replace function create_message_notification()
-returns trigger language plpgsql security definer as $$
-begin
-  if TG_OP = 'INSERT' then
-    insert into public.notifications (user_id, type, actor_id, message_id, created_at)
-    select cp.user_id, 'message', NEW.sender_id, NEW.id, now()
-    from public.chat_participants cp
-    where cp.chat_id = NEW.chat_id and cp.user_id != NEW.sender_id;
-  end if;
-  return NEW;
-end;
-$$;
 
-drop trigger if exists on_message_create_notification on public.messages;
-create trigger on_message_create_notification
-  after insert on public.messages
-  for each row execute function create_message_notification();

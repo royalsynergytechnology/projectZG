@@ -119,8 +119,32 @@ const login = async (req, res) => {
         // Simple check for username vs email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(identifier)) {
-            // Strict failure for username login without backend lookup implementation
-            return res.status(400).json({ error: 'Login with Username not fully supported yet. Please use Email.' });
+            // It's a username. We need to resolve it to an email.
+            const { supabaseAdmin } = require('../utils/supabaseClient');
+
+            if (!supabaseAdmin) {
+                return res.status(500).json({ error: 'Server configuration error: Username login unavailable.' });
+            }
+
+            // 1. Find Profile by Username
+            const { data: profile, error: profileError } = await supabaseAdmin
+                .from('profiles')
+                .select('id')
+                .eq('username', identifier)
+                .single();
+
+            if (profileError || !profile) {
+                return res.status(401).json({ error: 'Invalid login credentials.' });
+            }
+
+            // 2. Get User Email from Auth (Admin Only)
+            const { data: userAuth, error: authError } = await supabaseAdmin.auth.admin.getUserById(profile.id);
+
+            if (authError || !userAuth || !userAuth.user) {
+                return res.status(401).json({ error: 'Invalid login credentials.' });
+            }
+
+            emailToUse = userAuth.user.email;
         }
 
         const { data, error } = await supabase.auth.signInWithPassword({
