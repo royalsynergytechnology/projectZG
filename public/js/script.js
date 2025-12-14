@@ -918,6 +918,9 @@ window.onload = async () => {
     setTheme(getPreferredTheme());
     changeView(currentPage);
 
+    // Fetch user profile if logged in
+    await fetchProfile();
+
     // Attach Submit Post Listener
     const postBtn = document.querySelector('#createPostModal button.bg-primary');
     if (postBtn) {

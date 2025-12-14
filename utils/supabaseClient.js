@@ -72,8 +72,13 @@ const createContextClient = (req, res) => {
             },
             setAll(cookiesToSet) {
                 cookiesToSet.forEach(({ name, value, options }) => {
+                    const safeOptions = {
+                        ...options,
+                        sameSite: 'lax',
+                        secure: process.env.NODE_ENV === 'production'
+                    };
                     if (!res.headersSent) {
-                        res.cookie(name, value, options);
+                        res.cookie(name, value, safeOptions);
                     } else {
                         console.warn(`[Supabase] Should set cookie ${name} but headers sent.`);
                     }

@@ -167,10 +167,10 @@
                         <!-- User Info -->
                         <div class="flex flex-col items-center text-center">
                             <!-- Helper: Use a default avatar if none provided, JS will update -->
-                            <img src="https://placehold.co/96x96/e2e8f0/64748b?text=..." class="w-24 h-24 rounded-full mb-4 border-4 border-app object-cover" alt="Profile Avatar" onerror="this.onerror=null;this.src='https://placehold.co/96x96/e2e8f0/64748b?text=...'">
-                            <h3 class="text-2xl font-bold text-main">...</h3>
-                            <p class="text-md text-secondary">...</p>
-                            <p class="text-sm text-main mt-2 max-w-sm"></p>
+                            <img id="profile-display-avatar" src="https://placehold.co/96x96/e2e8f0/64748b?text=..." class="w-24 h-24 rounded-full mb-4 border-4 border-app object-cover" alt="Profile Avatar" onerror="this.onerror=null;this.src='https://placehold.co/96x96/e2e8f0/64748b?text=...'">
+                            <h3 id="profile-display-name" class="text-2xl font-bold text-main">...</h3>
+                            <p id="profile-display-username" class="text-md text-secondary">...</p>
+                            <p id="profile-display-bio" class="text-sm text-main mt-2 max-w-sm"></p>
 
                             <!-- Stats -->
                             <div class="flex justify-around w-full mt-4 p-3 bg-hover-bg rounded-xl transition-colors duration-300 border border-app">

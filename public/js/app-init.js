@@ -18,6 +18,10 @@
         document.cookie = `sb-access-token=${at}; path=/; max-age=3600; SameSite=Lax`;
         document.cookie = `sb-refresh-token=${rt}; path=/; max-age=2592000; SameSite=Lax`; // 30 days
 
+        // Sync to localStorage for API headers
+        localStorage.setItem('sb-access-token', at);
+        localStorage.setItem('sb-refresh-token', rt);
+
         initialToken = at;
 
         // Clear hash to clean up URL

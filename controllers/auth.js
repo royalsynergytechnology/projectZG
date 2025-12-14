@@ -7,7 +7,7 @@ const setAuthCookies = (res, session) => {
     const cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+        sameSite: 'lax',
         path: '/',
         maxAge: (session.expires_in || 3600) * 1000
     };
@@ -114,15 +114,17 @@ const login = async (req, res) => {
     }
 
     try {
-        let emailToUse = identifier;
+        let emailToUse = identifier.trim();
+        console.log(`[Auth Debug] Attempting login for: ${emailToUse}`);
 
         // Simple check for username vs email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(identifier)) {
+        if (!emailRegex.test(emailToUse)) {
             // It's a username. We need to resolve it to an email.
             const { supabaseAdmin } = require('../utils/supabaseClient');
 
             if (!supabaseAdmin) {
+                console.error('[Auth Debug] Supabase Admin missing');
                 return res.status(500).json({ error: 'Server configuration error: Username login unavailable.' });
             }
 
@@ -130,10 +132,11 @@ const login = async (req, res) => {
             const { data: profile, error: profileError } = await supabaseAdmin
                 .from('profiles')
                 .select('id')
-                .eq('username', identifier)
+                .eq('username', emailToUse)
                 .single();
 
             if (profileError || !profile) {
+                console.error('[Auth Debug] Username not found in profiles:', emailToUse);
                 return res.status(401).json({ error: 'Invalid login credentials.' });
             }
 
@@ -141,10 +144,12 @@ const login = async (req, res) => {
             const { data: userAuth, error: authError } = await supabaseAdmin.auth.admin.getUserById(profile.id);
 
             if (authError || !userAuth || !userAuth.user) {
+                console.error('[Auth Debug] Profile found but Auth User missing for ID:', profile.id);
                 return res.status(401).json({ error: 'Invalid login credentials.' });
             }
 
             emailToUse = userAuth.user.email;
+            console.log(`[Auth Debug] Resolved Username '${identifier}' to Email: ${emailToUse}`);
         }
 
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -156,7 +161,7 @@ const login = async (req, res) => {
         // Set HttpOnly Cookies
         setAuthCookies(res, data.session);
 
-        res.json({ message: 'Login successful!', user: data.user });
+        res.json({ message: 'Login successful!', user: data.user, session: data.session });
     } catch (err) {
         // Log the actual error server-side for debugging
         console.error('Login error:', err);
@@ -310,8 +315,19 @@ const googleCallback = async (req, res) => {
 
 const getMe = async (req, res) => {
     try {
-        const authHeader = req.headers.authorization;
-        const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+        // 1. If authMiddleware ran, we already have the user
+        if (req.user) {
+            return res.json({ user: req.user });
+        }
+
+        // 2. Fallback: Parse token from Header OR Cookie (if middleware wasn't used)
+        let token = req.cookies['sb-access-token'];
+        if (!token) {
+            const authHeader = req.headers.authorization;
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                token = authHeader.split(' ')[1];
+            }
+        }
 
         if (!token) {
             return res.status(401).json({ error: 'Not authenticated (Missing Token)' });

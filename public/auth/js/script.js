@@ -241,6 +241,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error);
 
+                if (data.session) {
+                    localStorage.setItem('sb-access-token', data.session.access_token);
+                    localStorage.setItem('sb-refresh-token', data.session.refresh_token);
+                }
+
                 store.dispatch(Actions.setUser(data.user));
                 showToast('success', "Welcome back!", "Signed In");
                 setTimeout(() => window.location.href = '/', 1000);
