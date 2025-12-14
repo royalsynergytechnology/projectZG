@@ -46,4 +46,7 @@ router.post('/reset-password/update', auth.updatePassword);
 // 8. ONBOARDING
 router.post('/onboarding', upload.single('avatar'), authMiddleware, auth.onboarding);
 
+// 9. IMAGEKIT AUTH
+router.get('/imagekit', auth.getImageKitAuth);
+
 module.exports = router;

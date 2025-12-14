@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             }
-        } catch (e) { console.log('Auth Check Failed', e); }
+        } catch (e) { }
     }
 
     // ==========================================
@@ -250,6 +250,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Set cookies for app-init.js
                     document.cookie = `sb-access-token=${data.session.access_token}; path=/; max-age=3600; SameSite=Lax`;
                     document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; max-age=2592000; SameSite=Lax`;
+
+                    // Redirect to home or original destination
+                    showToast('success', 'Login successful!', 'Welcome');
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const redirectTarget = urlParams.get('redirect');
+                    setTimeout(() => {
+                        window.location.href = redirectTarget ? decodeURIComponent(redirectTarget) : '/';
+                    }, 500);
                 }
             } catch (err) {
                 showToast('error', err.message, "Login Failed");

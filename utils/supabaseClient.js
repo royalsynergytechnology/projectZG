@@ -1,4 +1,4 @@
-require('dotenv').config();
+// require('dotenv').config({ override: true }); // Handled by main.js
 const { createClient } = require('@supabase/supabase-js');
 const { createServerClient } = require('@supabase/ssr');
 

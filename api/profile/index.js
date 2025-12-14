@@ -22,6 +22,8 @@ router.post('/posts/:id/like', authMiddleware, profile.toggleLike);
 
 // POST /api/posts/:id/bookmark
 router.post('/posts/:id/bookmark', authMiddleware, profile.toggleBookmark);
+// POST /api/posts/:id/repost
+router.post('/posts/:id/repost', authMiddleware, profile.toggleRepost);
 
 // GET /api/posts/:id/comments
 router.get('/posts/:id/comments', authMiddleware, profile.getComments);
@@ -29,8 +31,8 @@ router.get('/posts/:id/comments', authMiddleware, profile.getComments);
 // POST /api/posts/:id/comments
 router.post('/posts/:id/comments', authMiddleware, profile.createComment);
 
-// PUT /api/posts/:id - Edit Post
-router.put('/posts/:id', authMiddleware, profile.UpdatePost);
+// PUT /api/posts/:id - Edit Post (with optional media)
+router.put('/posts/:id', authMiddleware, upload.array('media', 4), profile.UpdatePost);
 
 // DELETE /api/posts/:id - Delete Post
 router.delete('/posts/:id', authMiddleware, profile.DeletePost);

@@ -25,6 +25,9 @@ function setTheme(theme) {
     if (iconDesktop) iconDesktop.setAttribute('data-lucide', newIcon);
     if (iconMobile) iconMobile.setAttribute('data-lucide', newIcon);
 
+    // Update toggle switch UI
+    updateToggleUI('theme', theme === 'dark');
+
     // Re-render icons if needed (required for Lucide to update the SVG)
     lucide.createIcons();
 }
@@ -35,10 +38,41 @@ function toggleTheme() {
     setTheme(newTheme);
 }
 
+// Update toggle switch visual state
+function updateToggleUI(toggleId, isOn) {
+    const toggle = document.getElementById(`${toggleId}-toggle`);
+    const status = document.getElementById(`${toggleId}-status`);
+
+    if (toggle) {
+        const knob = toggle.querySelector('div');
+        if (isOn) {
+            toggle.classList.remove('bg-gray-300', 'dark:bg-gray-600');
+            toggle.classList.add('bg-primary');
+            if (knob) knob.style.transform = 'translateX(16px)';
+        } else {
+            toggle.classList.remove('bg-primary');
+            toggle.classList.add('bg-gray-300', 'dark:bg-gray-600');
+            if (knob) knob.style.transform = 'translateX(0)';
+        }
+    }
+
+    if (status) {
+        status.textContent = isOn ? 'On' : 'Off';
+    }
+}
+
+// Update notification toggle based on permission
+function updateNotificationToggle() {
+    if ('Notification' in window) {
+        updateToggleUI('notification', Notification.permission === 'granted');
+    }
+}
+
 // --- API Helpers ---
 const API_URL = (typeof Config !== 'undefined') ? Config.API_URL : '/api';
 
 let supabase = null;
+let imagekit = null;
 
 async function initializeSupabase() {
     try {
@@ -51,6 +85,20 @@ async function initializeSupabase() {
         } else if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
             supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
         }
+
+        if (config.imageKitPublicKey && config.imageKitUrlEndpoint) {
+
+            try {
+                imagekit = new ImageKit({
+                    publicKey: config.imageKitPublicKey,
+                    urlEndpoint: config.imageKitUrlEndpoint,
+                    authenticationEndpoint: new URL(`${API_URL}/auth/imagekit`, window.location.origin).href
+                });
+
+            } catch (e) {
+                console.error('ImageKit init failed:', e);
+            }
+        }
     } catch (err) {
         console.error('Supabase Init Error:', err);
     }
@@ -62,6 +110,40 @@ function getHeaders() {
         'Content-Type': 'application/json',
         'Authorization': token ? `Bearer ${token}` : ''
     };
+}
+
+// --- ImageKit Helper ---
+async function uploadToImageKit(file) {
+    if (!imagekit) throw new Error('ImageKit not initialized');
+
+    // Manually fetch auth params to debug/ensure availability
+    const authEndpoint = new URL(`${API_URL}/auth/imagekit`, window.location.origin).href;
+    let authParams = null;
+    try {
+        const res = await fetch(authEndpoint);
+        if (!res.ok) throw new Error('Failed to fetch auth params');
+        authParams = await res.json();
+    } catch (e) {
+        console.error('[DEBUG] Auth Fetch Error:', e);
+        throw new Error('Could not authenticate upload');
+    }
+
+    return new Promise((resolve, reject) => {
+        imagekit.upload({
+            file: file,
+            fileName: file.name,
+            tags: ["user_upload"],
+            token: authParams.token,
+            signature: authParams.signature,
+            expire: authParams.expire
+        }, function (err, result) {
+            if (err) {
+                console.error('[DEBUG] SDK Upload Error:', err);
+                reject(err);
+            }
+            else resolve(result.url);
+        });
+    });
 }
 
 // --- Post Action Logic ---
@@ -126,6 +208,41 @@ async function toggleBookmark(button, postId) {
     }
 }
 
+async function toggleRepost(button, postId) {
+    if (!currentUser) {
+        showModal('authModal');
+        return;
+    }
+    if (!postId) return;
+
+    // Optimistic UI Update
+    const isReposted = button.classList.toggle('text-green-500');
+    // Note: button has text-secondary by default. If we toggle text-green-500, we should probably toggle text-secondary off 
+    // but typically CSS specificity handles it if the class is added. 
+    // However, existing like/bookmark logic doesn't seemingly remove text-secondary.
+    // Let's stick to the pattern.
+
+    const countSpan = button.querySelector('span');
+    let currentCount = parseInt(countSpan.textContent) || 0;
+
+    if (isReposted) {
+        countSpan.textContent = currentCount + 1;
+    } else {
+        countSpan.textContent = Math.max(0, currentCount - 1);
+    }
+
+    // API Call
+    try {
+        await fetch(`${API_URL}/posts/${postId}/repost`, {
+            method: 'POST',
+            headers: getHeaders(),
+            credentials: 'include'
+        });
+    } catch (err) {
+        console.error('Repost action failed:', err);
+    }
+}
+
 // --- Post Edit/Delete Logic ---
 // Toggle dropdown menu for post actions
 window.TogglePostMenu = (event, postId) => {
@@ -155,8 +272,12 @@ window.TogglePostMenu = (event, postId) => {
     }
 };
 
-// Open Edit Post Modal
-window.OpenEditPostModal = (postId, encodedContent) => {
+// Edit post media state
+let editSelectedFiles = [];
+let editCurrentMediaUrls = [];
+
+// Open Edit Post Modal with media support
+window.OpenEditPostModal = (postId, encodedContent, mediaUrlsJson = '[]') => {
     // Close dropdown menu
     const menu = document.getElementById(`post-menu-${postId}`);
     if (menu) menu.classList.add('hidden');
@@ -164,14 +285,91 @@ window.OpenEditPostModal = (postId, encodedContent) => {
     const content = decodeURIComponent(encodedContent);
     const textarea = document.getElementById('edit-post-content');
     const postIdInput = document.getElementById('edit-post-id');
+    const previewContainer = document.getElementById('edit-post-media-preview');
+    const clearBtn = document.getElementById('edit-media-clear-btn');
 
     if (textarea) textarea.value = content;
     if (postIdInput) postIdInput.value = postId;
 
+    // Reset state
+    editSelectedFiles = [];
+    editCurrentMediaUrls = [];
+
+    // Parse and show current media
+    try {
+        editCurrentMediaUrls = JSON.parse(decodeURIComponent(mediaUrlsJson)) || [];
+    } catch (e) {
+        editCurrentMediaUrls = [];
+    }
+
+    RenderEditMediaPreview();
     showModal('editPostModal');
+    lucide.createIcons();
 };
 
-// Edit Post (Submit)
+// Render edit media preview
+function RenderEditMediaPreview() {
+    const previewContainer = document.getElementById('edit-post-media-preview');
+    const clearBtn = document.getElementById('edit-media-clear-btn');
+
+    if (!previewContainer) return;
+
+    const hasMedia = editSelectedFiles.length > 0 || editCurrentMediaUrls.length > 0;
+    previewContainer.classList.toggle('hidden', !hasMedia);
+    if (clearBtn) clearBtn.classList.toggle('hidden', !hasMedia);
+
+    previewContainer.innerHTML = '';
+
+    // Show current media (if no new files selected)
+    if (editSelectedFiles.length === 0) {
+        editCurrentMediaUrls.forEach((url, i) => {
+            const div = document.createElement('div');
+            div.className = 'relative aspect-video rounded-lg overflow-hidden border border-app bg-black';
+            const isVideo = url.match(/\.(mp4|webm|ogg|mov)$/i);
+            div.innerHTML = isVideo
+                ? `<video src="${url}" class="w-full h-full object-cover"></video>`
+                : `<img src="${url}" class="w-full h-full object-cover">`;
+            previewContainer.appendChild(div);
+        });
+    } else {
+        // Show new selected files
+        editSelectedFiles.forEach((file, i) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const div = document.createElement('div');
+                div.className = 'relative aspect-video rounded-lg overflow-hidden border border-app bg-black';
+                const isVideo = file.type.startsWith('video/');
+                div.innerHTML = isVideo
+                    ? `<video src="${e.target.result}" class="w-full h-full object-cover"></video>`
+                    : `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+                previewContainer.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+}
+
+// Handle edit media file selection
+window.handleEditMediaSelect = (event) => {
+    const files = Array.from(event.target.files);
+    if (files.length === 0) return;
+
+    editSelectedFiles = files.slice(0, 4); // Max 4 files
+    editCurrentMediaUrls = []; // Clear existing - will be replaced
+    RenderEditMediaPreview();
+};
+
+// Clear edit media
+window.ClearEditMedia = () => {
+    editSelectedFiles = [];
+    editCurrentMediaUrls = [];
+    const input = document.getElementById('edit-post-media-input');
+    if (input) input.value = '';
+    RenderEditMediaPreview();
+};
+
+// Edit Post (Submit) with media support
+// Edit Post (Submit) with media support
 window.EditPost = async () => {
     const postId = document.getElementById('edit-post-id').value;
     const content = document.getElementById('edit-post-content').value.trim();
@@ -187,36 +385,43 @@ window.EditPost = async () => {
     btn.disabled = true;
 
     try {
+        let newMediaUrls = [];
+        // Upload new files if any
+        if (editSelectedFiles.length > 0) {
+            try {
+                if (typeof Toast !== 'undefined') Toast.info('Uploading new media...');
+                const uploadPromises = editSelectedFiles.map(file => uploadToImageKit(file));
+                newMediaUrls = await Promise.all(uploadPromises);
+            } catch (e) {
+                console.error('Upload Error', e);
+                throw new Error('Failed to upload images');
+            }
+        }
+
+        // Combine existing (retained) URLs + New URLs
+        // If editCurrentMediaUrls is empty and selectedFiles is empty, user cleared everything?
+        // Logic: editCurrentMediaUrls holds what remains of old files.
+        // newMediaUrls holds new uploads.
+        const finalMediaUrls = [...editCurrentMediaUrls, ...newMediaUrls];
+        const clearMedia = finalMediaUrls.length === 0;
+
+        const payload = {
+            content: content,
+            clearMedia: clearMedia,
+            media_urls: finalMediaUrls
+        };
+
         const response = await fetch(`${API_URL}/posts/${postId}`, {
             method: 'PUT',
             headers: getHeaders(),
             credentials: 'include',
-            body: JSON.stringify({ content })
+            body: JSON.stringify(payload)
         });
 
         if (response.ok) {
-            const { post } = await response.json();
-
-            // Update DOM optimistically
-            const postElement = document.querySelector(`[data-post-id="${postId}"]`);
-            if (postElement) {
-                const contentEl = postElement.querySelector('.post-content');
-                if (contentEl) {
-                    // Apply same highlighting as createPostHTML
-                    const highlightedContent = content
-                        .replace(/#(\w+)/g, '<span class="text-primary font-medium hover:underline cursor-pointer">#$1</span>')
-                        .replace(/@(\w+)/g, '<span class="text-primary font-medium hover:underline cursor-pointer" onclick="loadPublicProfile(\'$1\'); event.stopPropagation();">@$1</span>');
-                    contentEl.innerHTML = highlightedContent;
-                }
-
-                // Add (edited) indicator if not already present
-                const timeEl = postElement.querySelector('.text-xs.text-secondary');
-                if (timeEl && !timeEl.innerHTML.includes('(edited)')) {
-                    timeEl.innerHTML += ' <span class="text-xs text-secondary">(edited)</span>';
-                }
-            }
-
+            // Refresh feed to show updated post
             hideModal('editPostModal');
+            fetchFeed();
             if (typeof Toast !== 'undefined') Toast.success('Post updated!');
         } else {
             const err = await response.json();
@@ -736,6 +941,7 @@ function createPostHTML(post) {
     const likeFill = post.has_liked ? 'currentColor' : 'none';
     const isBookmarked = post.has_bookmarked ? 'text-primary' : '';
     const bookmarkFill = post.has_bookmarked ? 'currentColor' : 'none';
+    const isReposted = post.has_reposted ? 'text-green-500' : '';
     const timeAgo = new Date(post.created_at).toLocaleDateString();
     const isOwnPost = currentUser && currentUser.id === post.author_id;
     const editedIndicator = post.is_edited ? ' <span class="text-xs text-secondary">(edited)</span>' : '';
@@ -755,7 +961,7 @@ function createPostHTML(post) {
                 <i data-lucide="more-horizontal" class="w-5 h-5"></i>
             </button>
             <div id="post-menu-${post.id}" class="hidden absolute right-0 top-8 bg-surface border border-app rounded-lg shadow-lg py-1 z-50 min-w-32">
-                <button onclick="OpenEditPostModal('${post.id}', \`${encodeURIComponent(post.content_text || '')}\`)" class="w-full px-4 py-2 text-left text-sm text-main hover:bg-hover-bg flex items-center gap-2">
+                <button onclick="OpenEditPostModal('${post.id}', \`${encodeURIComponent(post.content_text || '')}\`, \`${encodeURIComponent(JSON.stringify(post.media_urls || []))}\`)" class="w-full px-4 py-2 text-left text-sm text-main hover:bg-hover-bg flex items-center gap-2">
                     <i data-lucide="pencil" class="w-4 h-4"></i> Edit
                 </button>
                 <button onclick="DeletePost('${post.id}')" class="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-hover-bg flex items-center gap-2">
@@ -804,7 +1010,7 @@ function createPostHTML(post) {
                         <span class="text-sm font-medium">${post.comments_count || 0}</span>
                     </button>
                     
-                    <button class="flex items-center space-x-2 text-secondary hover:text-green-500 transition-colors">
+                    <button onclick="toggleRepost(this, '${post.id}')" class="flex items-center space-x-2 text-secondary hover:text-green-500 transition-colors ${isReposted}">
                         <i data-lucide="repeat" class="w-5 h-5"></i>
                         <span class="text-sm font-medium">${post.reposts_count || 0}</span>
                     </button>
@@ -885,7 +1091,7 @@ window.SwitchFeedFilter = (filter) => {
 
 // Switch profile tab (Posts/Saved/Tagged) - called from HTML
 window.SwitchProfileTab = async (tab) => {
-    console.log('[DEBUG] SwitchProfileTab called:', tab);
+
 
     currentProfileTab = tab;
     const grid = document.getElementById('profile-posts-grid');
@@ -903,7 +1109,7 @@ window.SwitchProfileTab = async (tab) => {
     });
 
     if (!grid) {
-        console.log('[DEBUG] No grid found');
+
         return;
     }
 
@@ -943,6 +1149,7 @@ window.SwitchProfileTab = async (tab) => {
                 const hasMedia = post.media_urls && post.media_urls.length > 0;
                 const el = document.createElement('div');
                 el.className = 'aspect-square bg-placeholder-bg rounded-lg overflow-hidden relative cursor-pointer hover:opacity-90 transition-opacity';
+                el.onclick = () => OpenCommentsModal(post.id);
 
                 if (hasMedia) {
                     const isVideo = post.media_urls[0].match(/\.(mp4|webm|ogg|mov|quicktime)$/i);
@@ -1052,6 +1259,40 @@ window.insertTextAtCursor = (text) => {
     textarea.focus();
 };
 
+// Upload with progress using XMLHttpRequest
+function UploadWithProgress(url, formData, onProgress) {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable && onProgress) {
+                const percent = Math.round((e.loaded / e.total) * 100);
+                onProgress(percent);
+            }
+        });
+
+        xhr.addEventListener('load', () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    resolve(JSON.parse(xhr.responseText));
+                } catch {
+                    resolve(xhr.responseText);
+                }
+            } else {
+                reject(new Error(`Upload failed: ${xhr.statusText}`));
+            }
+        });
+
+        xhr.addEventListener('error', () => reject(new Error('Network error')));
+        xhr.addEventListener('abort', () => reject(new Error('Upload cancelled')));
+
+        xhr.open('POST', url, true);
+        xhr.setRequestHeader('Authorization', getHeaders()['Authorization']);
+        xhr.withCredentials = true;
+        xhr.send(formData);
+    });
+}
+
 async function submitPost() {
     const textarea = document.querySelector('#createPostModal textarea');
     if (!textarea) return;
@@ -1064,39 +1305,63 @@ async function submitPost() {
     btn.innerText = 'Posting...';
     btn.disabled = true;
 
-    try {
-        const formData = new FormData();
-        formData.append('content', content);
-        selectedFiles.forEach(file => {
-            formData.append('media', file);
-        });
+    // Show progress toast if uploading media
+    let progressToast = null;
+    const hasMedia = selectedFiles.length > 0;
+    if (hasMedia && typeof Toast !== 'undefined') {
+        progressToast = Toast.progress('Uploading to ImageKit...', 'Uploading Media');
+    }
 
-        // Headers: Do NOT set Content-Type manually for FormData, browser does it with boundary
-        const headers = {
-            'Authorization': getHeaders()['Authorization']
+    try {
+        let mediaUrls = [];
+        if (hasMedia) {
+            // Upload all files to ImageKit
+            try {
+                const uploadPromises = selectedFiles.map(file => uploadToImageKit(file));
+                mediaUrls = await Promise.all(uploadPromises);
+
+                if (progressToast && typeof Toast !== 'undefined') {
+                    Toast.updateProgress(progressToast, 100, 'processing...');
+                }
+            } catch (uploadErr) {
+                console.error('ImageKit Upload Error:', uploadErr);
+                throw new Error('Failed to upload images');
+            }
+        }
+
+        const payload = {
+            content: content,
+            media_urls: mediaUrls
         };
 
         const response = await fetch(`${API_URL}/posts`, {
             method: 'POST',
-            headers: headers,
+            headers: getHeaders(),
             credentials: 'include',
-            body: formData
+            body: JSON.stringify(payload)
         });
 
-        if (response.ok) {
-            textarea.value = '';
-            selectedFiles = [];
-            document.getElementById('post-media-preview').innerHTML = '';
-            document.getElementById('post-media-preview').classList.add('hidden');
+        if (!response.ok) throw new Error('Post failed');
+        const data = await response.json();
 
-            hideModal('createPostModal');
-            fetchFeed();
-            if (typeof Toast !== 'undefined') Toast.success("Posted successfully!");
-        } else {
-            throw new Error('Post failed');
+        if (progressToast && typeof Toast !== 'undefined') {
+            Toast.completeProgress(progressToast, 'Posted successfully!');
+        } else if (typeof Toast !== 'undefined') {
+            Toast.success("Posted successfully!");
         }
+
+        textarea.value = '';
+        selectedFiles = [];
+        document.getElementById('post-media-preview').innerHTML = '';
+        document.getElementById('post-media-preview').classList.add('hidden');
+
+        hideModal('createPostModal');
+        fetchFeed();
     } catch (err) {
         console.error(err);
+        if (progressToast && typeof Toast !== 'undefined') {
+            Toast.close(progressToast);
+        }
         if (typeof Toast !== 'undefined') Toast.error("Failed to create post.");
     } finally {
         btn.innerText = originalText;
@@ -1147,7 +1412,7 @@ let currentUser = null;
 async function fetchProfile() {
     try {
         const headers = getHeaders();
-        console.log('[DEBUG] fetchProfile Headers:', headers); // DEBUG
+
 
         const response = await fetch(`${API_URL}/profile`, {
             headers,
@@ -1155,7 +1420,7 @@ async function fetchProfile() {
         });
         if (response.ok) {
             const { profile } = await response.json();
-            console.log('[DEBUG] fetchProfile Success:', profile); // DEBUG
+
             currentUser = profile; // Store for comparison
 
             // Update "You" context in sidebar/modals (global context)
@@ -1189,7 +1454,7 @@ async function loadPublicProfile(username) {
         if (response.ok) {
             const { profile } = await response.json();
 
-            console.log('[DEBUG] loadPublicProfile currentUser:', currentUser); // DEBUG
+
 
             // Real comparison logic
             const isOwnProfile = currentUser && (currentUser.username === profile.username || currentUser.id === profile.id);
@@ -1197,7 +1462,7 @@ async function loadPublicProfile(username) {
 
             // If Guest, show the "Login to Connect" modal after a short delay or immediately
             if (!currentUser) {
-                console.log('[DEBUG] Guest detected, showing modal'); // DEBUG
+
                 // User asked to "hide it with login modal". 
                 // We show it immediately.
                 setTimeout(() => showModal('authModal'), 500);
@@ -1416,6 +1681,7 @@ async function renderProfileView(profile, isOwnProfile) {
                     const hasMedia = post.media_urls && post.media_urls.length > 0;
                     const el = document.createElement('div');
                     el.className = 'aspect-square bg-placeholder-bg rounded-lg overflow-hidden relative cursor-pointer hover:opacity-90 transition-opacity';
+                    el.onclick = () => OpenCommentsModal(post.id);
 
                     if (hasMedia) {
                         // Check if video
@@ -1496,23 +1762,30 @@ window.saveProfile = async () => {
     btn.disabled = true;
 
     try {
-        const formData = new FormData();
-        formData.append('full_name', name);
-        formData.append('username', username);
-        formData.append('bio', bio);
-        formData.append('gender', gender);
+        let avatarUrl = null;
         if (selectedAvatarFile) {
-            formData.append('avatar', selectedAvatarFile);
+            try {
+                if (typeof Toast !== 'undefined') Toast.info("Uploading avatar...");
+                avatarUrl = await uploadToImageKit(selectedAvatarFile);
+            } catch (uErr) {
+                console.error("Avatar Upload Error", uErr);
+                throw new Error("Failed to upload avatar");
+            }
         }
+
+        const payload = {
+            full_name: name,
+            username: username,
+            bio: bio,
+            gender: gender
+        };
+        if (avatarUrl) payload.avatar_url = avatarUrl;
 
         const response = await fetch(`${API_URL}/profile`, {
             method: 'PUT',
-            headers: {
-                // Do NOT set Content-Type for FormData
-                'Authorization': getHeaders()['Authorization']
-            },
+            headers: getHeaders(), // Proper JSON headers
             credentials: 'include',
-            body: formData
+            body: JSON.stringify(payload)
         });
 
         if (response.ok) {
@@ -1521,8 +1794,6 @@ window.saveProfile = async () => {
             updateUserContext(profile);
             renderProfileView(profile, true);
 
-            // Re-fetch posts/stories to update avatars there too if needed
-            // For now just hide modal
             hideModal('editProfileModal');
             if (typeof Toast !== 'undefined') Toast.success("Profile updated!");
         } else {
@@ -1885,8 +2156,94 @@ function subscribeToNotifications() {
 
             // 3. Show Badge
             setNotificationBadge(true);
+
+            // 4. Show browser notification if permission granted
+            if (Notification.permission === 'granted') {
+                const n = payload.new;
+                const notifTypes = {
+                    like: { title: 'New Like', body: 'Someone liked your post!' },
+                    comment: { title: 'New Comment', body: 'Someone commented on your post!' },
+                    follow: { title: 'New Follower', body: 'Someone started following you!' },
+                    reply: { title: 'New Reply', body: 'Someone replied to your comment!' },
+                    mention: { title: 'Mentioned', body: 'You were mentioned in a post!' },
+                    repost: { title: 'Reposted', body: 'Someone reposted your content!' }
+                };
+                const info = notifTypes[n?.type] || { title: 'ProjectZG', body: 'New notification!' };
+
+                new Notification(info.title, {
+                    body: info.body,
+                    icon: '/img/ico/icons8-dev-community-color-96.png',
+                    tag: `notif-${n?.id || Date.now()}`
+                });
+            }
         })
         .subscribe();
+}
+
+// Register Service Worker and request notification permission
+async function InitPushNotifications() {
+    // Check browser support
+    if (!('serviceWorker' in navigator) || !('Notification' in window)) {
+        return;
+    }
+
+    // Register service worker
+    try {
+        await navigator.serviceWorker.register('/Sw.js');
+    } catch (err) {
+        // Service worker registration failed silently
+    }
+}
+
+// Request notification permission on first click
+window.RequestNotificationPermission = async () => {
+    // Check for secure context (HTTPS or localhost)
+    if (!window.isSecureContext) {
+        Toast.warning('Notifications require HTTPS. Please use a secure connection.');
+        return;
+    }
+
+    if (!('Notification' in window)) {
+        Toast.info('Browser notifications not supported');
+        return;
+    }
+
+    if (Notification.permission === 'granted') {
+        Toast.success('Notifications already enabled!');
+        return;
+    }
+
+    if (Notification.permission === 'denied') {
+        Toast.warning('Notifications blocked. Please enable in browser settings.');
+        return;
+    }
+
+    // Permission is 'default' - prompt the user
+    try {
+        const permission = await Notification.requestPermission();
+
+        if (permission === 'granted') {
+            Toast.success('Notifications enabled!');
+            updateNotificationToggle();
+            // Show test notification
+            new Notification('ProjectZG', {
+                body: 'You will now receive notifications for likes, comments, and follows!',
+                icon: '/img/ico/icons8-dev-community-color-96.png'
+            });
+        } else if (permission === 'denied') {
+            Toast.warning('Notifications were denied.');
+            updateNotificationToggle();
+        } else {
+            Toast.info('Notifications not enabled');
+        }
+    } catch (err) {
+        Toast.error('Failed to request notification permission');
+    }
+};
+
+// Init push notifications on load
+if (currentUser) {
+    InitPushNotifications();
 }
 
 // --- Cookie Consent Logic ---
@@ -1978,8 +2335,7 @@ function initCookieConsent() {
         }
         .cc-btn-decline:hover {
             background: rgba(128, 128, 128, 0.2);
-        }
-    `;
+        }`;
     document.head.appendChild(style);
 
     // Create Elements
@@ -2160,6 +2516,7 @@ window.onload = async () => {
 
     setupInfiniteScroll();
     initCookieConsent();
+    updateNotificationToggle();
 
     // Check for deep link (user param)
     const urlParams = new URLSearchParams(window.location.search);

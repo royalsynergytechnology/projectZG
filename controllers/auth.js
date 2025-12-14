@@ -1,6 +1,9 @@
 const { supabase, createAuthenticatedClient, supabaseAdmin } = require('../utils/supabaseClient');
 const { uploadFile } = require('../utils/uploadHelper');
 const crypto = require('crypto');
+const imagekit = require('../utils/imagekit');
+
+// - HELPER FUNCTIONS ---
 
 // - HELPER FUNCTIONS ---
 
@@ -116,7 +119,6 @@ const login = async (req, res) => {
 
     try {
         let emailToUse = identifier.trim();
-        console.log(`[Auth Debug] Attempting login for: ${emailToUse}`);
 
         // Simple check for username vs email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -125,7 +127,6 @@ const login = async (req, res) => {
             const { supabaseAdmin } = require('../utils/supabaseClient');
 
             if (!supabaseAdmin) {
-                console.error('[Auth Debug] Supabase Admin missing');
                 return res.status(500).json({ error: 'Server configuration error: Username login unavailable.' });
             }
 
@@ -137,7 +138,6 @@ const login = async (req, res) => {
                 .single();
 
             if (profileError || !profile) {
-                console.error('[Auth Debug] Username not found in profiles:', emailToUse);
                 return res.status(401).json({ error: 'Invalid login credentials.' });
             }
 
@@ -145,18 +145,17 @@ const login = async (req, res) => {
             const { data: userAuth, error: authError } = await supabaseAdmin.auth.admin.getUserById(profile.id);
 
             if (authError || !userAuth || !userAuth.user) {
-                console.error('[Auth Debug] Profile found but Auth User missing for ID:', profile.id);
                 return res.status(401).json({ error: 'Invalid login credentials.' });
             }
 
             emailToUse = userAuth.user.email;
-            console.log(`[Auth Debug] Resolved Username '${identifier}' to Email: ${emailToUse}`);
         }
 
         const { data, error } = await supabase.auth.signInWithPassword({
             email: emailToUse,
             password
         });
+
         if (error) throw error;
 
         // Set HttpOnly Cookies
@@ -274,6 +273,11 @@ const googleCallback = async (req, res) => {
 
         if (error) {
             console.error('[Auth-Callback] Code Exchange Error:', error);
+
+            // Clear any potential bad cookies
+            res.clearCookie('sb-access-token', { path: '/' });
+            res.clearCookie('sb-refresh-token', { path: '/' });
+
             // Check for specific PKCE error for better feedback
             if (error.name === 'AuthApiError' && error.message.includes('code verifier')) {
                 return res.redirect(`/auth?error=${encodeURIComponent('Authentication mismatch. Please try again.')}`);
@@ -301,7 +305,7 @@ const googleCallback = async (req, res) => {
             .eq('id', session.user.id)
             .single();
 
-        console.log(`[Auth-Callback] Profile Check for ${session.user.id}:`, profile || 'No Profile Found', profileError || '');
+
 
         // Construct cleanup hash for client-side token handoff
         const hash = `access_token=${session.access_token}&refresh_token=${session.refresh_token}`;
@@ -315,11 +319,8 @@ const googleCallback = async (req, res) => {
 
         if (hasValidProfile) {
             // Existing user -> Home
-            console.log('[Auth-Callback] Redirecting to Home (Profile Complete)');
             res.redirect(302, `/#${hash}`);
         } else {
-            // New user -> Onboarding
-            console.log('[Auth-Callback] Redirecting to Onboarding (Profile Incomplete)');
             // Use query param which auth.js already looks for
             res.redirect(302, `/auth?onboarding=true#${hash}`);
         }
@@ -566,16 +567,19 @@ const onboarding = async (req, res) => {
         }
 
         // Use Admin client for password update to bypass session requirement
-        const { error: passwordError } = await supabaseAdmin.auth.admin.updateUserById(
+        // IMPORTANT: Include email to properly link email identity for OAuth users
+        const { data: updateData, error: passwordError } = await supabaseAdmin.auth.admin.updateUserById(
             userId,
-            { password: password }
+            {
+                email: user.email, // Include email to ensure email identity is linked
+                password: password,
+                email_confirm: true // Auto-confirm email since they verified via OAuth
+            }
         );
 
-        if (passwordError) {
-            throw passwordError;
-        }
+        if (passwordError) throw passwordError;
 
-        // 5. Re-authenticate to get a valid session (Password change invalidates old tokens)
+        // Re-authenticate to get a valid session (Password change invalidates old tokens)
         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
             email: user.email,
             password: password
@@ -601,6 +605,18 @@ const onboarding = async (req, res) => {
     }
 };
 
+const getImageKitAuth = (req, res) => {
+    try {
+        const token = req.query.token || crypto.randomUUID();
+        const expire = req.query.expire || parseInt(Date.now() / 1000) + 2400; // 40 minutes from now
+        const result = imagekit.getAuthenticationParameters(token, expire);
+        res.json(result);
+    } catch (err) {
+        console.error('ImageKit Auth Error:', err);
+        res.status(500).json({ error: 'Failed to generate ImageKit auth parameters' });
+    }
+};
+
 module.exports = {
     signup,
     login,
@@ -610,5 +626,7 @@ module.exports = {
     logout,
     resetPassword,
     updatePassword,
-    onboarding
+    onboarding,
+    getImageKitAuth
 };
+

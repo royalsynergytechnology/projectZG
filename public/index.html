@@ -21,6 +21,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Load Supabase JS -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script type="text/javascript" src="https://unpkg.com/imagekit-javascript/dist/imagekit.min.js"></script>
 
     <!-- Hybrid Styling: Custom CSS for Theme Variables and Core Transitions -->
     <link rel="stylesheet" href="css/dist/global.css">
@@ -253,14 +254,14 @@
                             <div>
                                 <h3 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2">Account</h3>
                                 <div class="bg-bg rounded-xl overflow-hidden border border-app">
-                                    <button class="w-full flex items-center justify-between p-4 hover:bg-hover-bg transition-colors border-b border-app text-main text-left">
+                                    <button onclick="Toast.info('Coming soon!')" class="w-full flex items-center justify-between p-4 hover:bg-hover-bg transition-colors border-b border-app text-main text-left">
                                         <div class="flex items-center">
                                             <i data-lucide="user" class="w-5 h-5 mr-3 text-secondary"></i>
                                             <span>Personal Information</span>
                                         </div>
                                         <i data-lucide="chevron-right" class="w-4 h-4 text-secondary"></i>
                                     </button>
-                                    <button class="w-full flex items-center justify-between p-4 hover:bg-hover-bg transition-colors border-b border-app text-main text-left">
+                                    <button onclick="Toast.info('Coming soon!')" class="w-full flex items-center justify-between p-4 hover:bg-hover-bg transition-colors border-b border-app text-main text-left">
                                         <div class="flex items-center">
                                              <i data-lucide="lock" class="w-5 h-5 mr-3 text-secondary"></i>
                                             <span>Privacy & Security</span>
@@ -273,21 +274,29 @@
                             <div>
                                 <h3 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2">Preferences</h3>
                                 <div class="bg-bg rounded-xl overflow-hidden border border-app">
-                                    <button class="w-full flex items-center justify-between p-4 hover:bg-hover-bg transition-colors border-b border-app text-main text-left">
+                                    <button id="btn-notification-toggle" onclick="RequestNotificationPermission()" class="w-full flex items-center justify-between p-4 hover:bg-hover-bg transition-colors border-b border-app text-main text-left">
                                         <div class="flex items-center">
                                             <i data-lucide="bell" class="w-5 h-5 mr-3 text-secondary"></i>
-                                            <span>Notifications</span>
+                                            <span>Browser Notifications</span>
                                         </div>
-                                        <div class="w-10 h-6 bg-primary rounded-full relative">
-                                            <div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+                                        <div class="flex items-center gap-2">
+                                            <span id="notification-status" class="text-xs text-secondary">Off</span>
+                                            <div id="notification-toggle" class="w-10 h-6 bg-gray-300 dark:bg-gray-600 rounded-full relative transition-colors">
+                                                <div class="absolute w-4 h-4 bg-white rounded-full top-1 left-1 transition-all shadow-sm"></div>
+                                            </div>
                                         </div>
                                     </button>
-                                    <button onclick="toggleTheme()" class="w-full flex items-center justify-between p-4 hover:bg-hover-bg transition-colors text-main text-left">
+                                    <button id="btn-theme-toggle" onclick="toggleTheme()" class="w-full flex items-center justify-between p-4 hover:bg-hover-bg transition-colors text-main text-left">
                                         <div class="flex items-center">
                                             <i data-lucide="moon" class="w-5 h-5 mr-3 text-secondary"></i>
                                             <span>Dark Mode</span>
                                         </div>
-                                        <i data-lucide="toggle-right" class="w-5 h-5 text-secondary"></i>
+                                        <div class="flex items-center gap-2">
+                                            <span id="theme-status" class="text-xs text-secondary">Off</span>
+                                            <div id="theme-toggle" class="w-10 h-6 bg-gray-300 dark:bg-gray-600 rounded-full relative transition-colors">
+                                                <div class="absolute w-4 h-4 bg-white rounded-full top-1 left-1 transition-all shadow-sm"></div>
+                                            </div>
+                                        </div>
                                     </button>
                                 </div>
                             </div>
@@ -295,14 +304,14 @@
                             <div>
                                 <h3 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2">Community</h3>
                                 <div class="bg-bg rounded-xl overflow-hidden border border-app">
-                                    <button class="w-full flex items-center justify-between p-4 hover:bg-hover-bg transition-colors border-b border-app text-main text-left">
+                                    <button onclick="Toast.info('Coming soon!')" class="w-full flex items-center justify-between p-4 hover:bg-hover-bg transition-colors border-b border-app text-main text-left">
                                         <div class="flex items-center">
                                             <i data-lucide="file-text" class="w-5 h-5 mr-3 text-secondary"></i>
                                             <span>Community Guidelines</span>
                                         </div>
                                         <i data-lucide="external-link" class="w-4 h-4 text-secondary"></i>
                                     </button>
-                                    <button class="w-full flex items-center justify-between p-4 hover:bg-hover-bg transition-colors text-main text-left">
+                                    <button onclick="Toast.info('Coming soon!')" class="w-full flex items-center justify-between p-4 hover:bg-hover-bg transition-colors text-main text-left">
                                         <div class="flex items-center">
                                             <i data-lucide="help-circle" class="w-5 h-5 mr-3 text-secondary"></i>
                                             <span>Help & Support</span>
@@ -478,7 +487,22 @@
             <!-- Modal Body -->
             <div class="p-6 space-y-4">
                 <input type="hidden" id="edit-post-id" value="">
-                <textarea id="edit-post-content" placeholder="What's on your mind?" rows="6" class="w-full p-3 border border-app rounded-lg resize-none text-base focus:ring-2 focus:ring-primary focus:border-primary bg-surface text-main"></textarea>
+                <textarea id="edit-post-content" placeholder="What's on your mind?" rows="4" class="w-full p-3 border border-app rounded-lg resize-none text-base focus:ring-2 focus:ring-primary focus:border-primary bg-surface text-main"></textarea>
+                
+                <!-- Current Media Preview -->
+                <div id="edit-post-media-preview" class="grid-cols-2 gap-2 hidden"></div>
+                
+                <!-- Media Upload -->
+                <div class="flex items-center gap-3 border-t border-app pt-4">
+                    <label class="flex items-center gap-2 text-secondary hover:text-primary cursor-pointer transition-colors">
+                        <i data-lucide="image" class="w-5 h-5"></i>
+                        <span class="text-sm">Change Media</span>
+                        <input type="file" id="edit-post-media-input" accept="image/*,video/*" multiple class="hidden" onchange="handleEditMediaSelect(event)">
+                    </label>
+                    <button onclick="ClearEditMedia()" id="edit-media-clear-btn" class="hidden text-sm text-red-500 hover:text-red-600">
+                        <i data-lucide="trash-2" class="w-4 h-4 inline mr-1"></i>Remove All
+                    </button>
+                </div>
             </div>
 
             <!-- Modal Footer -->

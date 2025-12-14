@@ -1,12 +1,9 @@
 const { supabase, createAuthenticatedClient } = require('../utils/supabaseClient');
 
 // Get authenticated user's profile
-// Get authenticated user's profile
 exports.getProfile = async (req, res) => {
     try {
         const userId = req.user.id;
-
-        // Use Authenticated Client to ensure RLS policies are respected
         const token = req.cookies['sb-access-token'] ||
             (req.headers.authorization && req.headers.authorization.split(' ')[1]);
 
@@ -48,7 +45,6 @@ exports.updateProfile = async (req, res) => {
         // Handle Avatar Upload if file is present
         if (req.file) {
             const { uploadFile } = require('../utils/uploadHelper');
-            const { createAuthenticatedClient } = require('../utils/supabaseClient');
 
             // Get token for auth upload
             let token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
@@ -58,6 +54,9 @@ exports.updateProfile = async (req, res) => {
 
             const uploadResult = await uploadFile(req.file, 'avatars', userId, token);
             avatar_url = uploadResult.publicUrl;
+        } else if (req.body.avatar_url) {
+            // Allow direct URL update (ImageKit)
+            avatar_url = req.body.avatar_url;
         }
 
         const updates = {};
@@ -346,7 +345,8 @@ exports.getFeed = async (req, res) => {
             return {
                 ...post,
                 has_liked: userReactions.some(r => r.type === 'like'),
-                has_bookmarked: userReactions.some(r => r.type === 'bookmark')
+                has_bookmarked: userReactions.some(r => r.type === 'bookmark'),
+                has_reposted: userReactions.some(r => r.type === 'repost')
             };
         });
 
@@ -364,26 +364,38 @@ exports.createPost = async (req, res) => {
         const { content } = req.body;
         const files = req.files || []; // Multer adds this
 
-        if ((!content || !content.trim()) && files.length === 0) {
+        // Check if we have content OR media (either uploaded files or pre-uploaded URLs)
+        const mediaUrls = req.body.media_urls || [];
+
+        if ((!content || !content.trim()) && files.length === 0 && mediaUrls.length === 0) {
+
             return res.status(400).json({ error: 'Content or media is required' });
         }
 
-        // Upload files
-        const { uploadFile } = require('../utils/uploadHelper');
+        if (req.files && req.files.length > 0) {
+            // Upload files (legacy/fallback)
+            const { uploadFile } = require('../utils/uploadHelper');
 
+            let token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
+            if (!token && req.cookies && req.cookies['sb-access-token']) {
+                token = req.cookies['sb-access-token'];
+            }
+
+            for (const file of req.files) {
+                const uploadResult = await uploadFile(file, 'posts', userId, token);
+                mediaUrls.push(uploadResult.publicUrl);
+            }
+        }
+
+        // Create authenticated client for DB operations (RLS check)
+        const { createAuthenticatedClient, supabase: anonClient } = require('../utils/supabaseClient');
+
+        // Ensure token is defined in the outer scope
         let token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
         if (!token && req.cookies && req.cookies['sb-access-token']) {
             token = req.cookies['sb-access-token'];
         }
 
-        const mediaUrls = [];
-        for (const file of files) {
-            const uploadResult = await uploadFile(file, 'posts', userId, token);
-            mediaUrls.push(uploadResult.publicUrl);
-        }
-
-        // Create authenticated client for DB operations (RLS check)
-        const { createAuthenticatedClient, supabase: anonClient } = require('../utils/supabaseClient');
         let dbClient = anonClient;
         if (token) {
             dbClient = await createAuthenticatedClient(token);
@@ -485,6 +497,44 @@ exports.toggleBookmark = async (req, res) => {
     }
 };
 
+// Toggle Repost
+exports.toggleRepost = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const postId = req.params.id;
+
+        let client = supabase;
+        const token = req.cookies['sb-access-token'] || (req.headers.authorization && req.headers.authorization.split(' ')[1]);
+        if (token) {
+            const authClient = await createAuthenticatedClient(token);
+            if (authClient) client = authClient;
+        }
+
+        const { data: existing } = await supabase
+            .from('reactions')
+            .select('id')
+            .eq('post_id', postId)
+            .eq('user_id', userId)
+            .eq('type', 'repost')
+            .single();
+
+        if (existing) {
+            await client.from('reactions').delete().eq('id', existing.id);
+            res.json({ reposted: false });
+        } else {
+            await client.from('reactions').insert({
+                post_id: postId,
+                user_id: userId,
+                type: 'repost'
+            });
+            res.json({ reposted: true });
+        }
+    } catch (err) {
+        console.error('Repost Error:', err);
+        res.status(500).json({ error: 'Action failed' });
+    }
+};
+
 // Fetch Comments (Threaded)
 exports.getComments = async (req, res) => {
     try {
@@ -573,16 +623,7 @@ exports.createComment = async (req, res) => {
 
         if (error) throw error;
 
-        // Update parent's replies_count if this is a reply
-        if (parent_id) {
-            await supabase.rpc('increment_replies_count', { comment_id: parent_id }).catch(() => {
-                // Fallback: update directly if RPC doesn't exist
-                supabase
-                    .from('comments')
-                    .update({ replies_count: supabase.raw('replies_count + 1') })
-                    .eq('id', parent_id);
-            });
-        }
+        // Note: replies_count is updated automatically by database trigger (on_comment_replies_count)
 
         res.json({ comment: newComment });
     } catch (err) {
@@ -686,7 +727,8 @@ exports.getUserPosts = async (req, res) => {
                 return {
                     ...post,
                     has_liked: userReactions.some(r => r.type === 'like'),
-                    has_bookmarked: userReactions.some(r => r.type === 'bookmark')
+                    has_bookmarked: userReactions.some(r => r.type === 'bookmark'),
+                    has_reposted: userReactions.some(r => r.type === 'repost')
                 };
             });
         }
@@ -743,7 +785,9 @@ exports.getNotifications = async (req, res) => {
 exports.getConfig = (req, res) => {
     res.json({
         supabaseUrl: process.env.SUPABASE_URL,
-        supabaseKey: process.env.SUPABASE_ANON_KEY
+        supabaseKey: process.env.SUPABASE_ANON_KEY,
+        imageKitPublicKey: process.env.IMAGEKIT_PUBLIC_KEY,
+        imageKitUrlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT
     });
 };
 
@@ -752,7 +796,10 @@ exports.UpdatePost = async (req, res) => {
     try {
         const userId = req.user.id;
         const postId = req.params.id;
-        const { content } = req.body;
+
+        // Get content from body (JSON) or FormData
+        const content = req.body.content;
+        const clearMedia = req.body.clearMedia === 'true' || req.body.clearMedia === true;
 
         if (!content || !content.trim()) {
             return res.status(400).json({ error: 'Content is required' });
@@ -774,7 +821,7 @@ exports.UpdatePost = async (req, res) => {
         // Verify ownership first
         const { data: existingPost, error: fetchError } = await dbClient
             .from('posts')
-            .select('id, author_id')
+            .select('id, author_id, media_urls')
             .eq('id', postId)
             .single();
 
@@ -786,14 +833,39 @@ exports.UpdatePost = async (req, res) => {
             return res.status(403).json({ error: 'Not authorized to edit this post' });
         }
 
+        // Prepare update data
+        const updateData = {
+            content_text: content.trim(),
+            is_edited: true,
+            updated_at: new Date().toISOString()
+        };
+
+        // Handle media updates
+        let mediaUrls = req.body.media_urls || []; // Initialize from body
+
+        if (req.files && req.files.length > 0) {
+            // Upload new media files and add to existing mediaUrls
+            const { uploadFile } = require('../utils/uploadHelper');
+
+            for (const file of req.files) {
+                const result = await uploadFile(file, 'posts', userId, token);
+                mediaUrls.push(result.publicUrl);
+            }
+        }
+
+        if (clearMedia) {
+            // Clear all media, overriding any mediaUrls from body or files
+            updateData.media_urls = [];
+        } else {
+            // Use the collected mediaUrls (from body + new uploads)
+            updateData.media_urls = mediaUrls;
+        }
+        // If no req.files and not clearMedia, keep existing media_urls
+
         // Update the post
         const { data: updatedPost, error: updateError } = await dbClient
             .from('posts')
-            .update({
-                content_text: content.trim(),
-                is_edited: true,
-                updated_at: new Date().toISOString()
-            })
+            .update(updateData)
             .eq('id', postId)
             .select('*, author:profiles(username, full_name, avatar_url)')
             .single();

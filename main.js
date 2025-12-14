@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ override: true });
 const express = require('express');
 const cors = require('cors');
 
@@ -53,7 +53,7 @@ app.use((req, res, next) => {
         "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
         "img-src 'self' data: https: blob:",
         "media-src 'self' data: blob: https:",
-        "connect-src 'self' https://*.supabase.co https://unpkg.com https://vercel.live https://*.vercel.app wss://ws-us3.pusher.com https://sockjs-us3.pusher.com",
+        "connect-src 'self' https://*.supabase.co https://unpkg.com https://vercel.live https://*.vercel.app wss://ws-us3.pusher.com https://sockjs-us3.pusher.com https://ik.imagekit.io https://upload.imagekit.io",
         "frame-src 'self' https://vercel.live",
         "frame-ancestors 'none'",
         "base-uri 'self'",
@@ -122,7 +122,7 @@ app.use((req, res, next) => {
 // Only listen if run directly (local dev), otherwise export for Vercel
 if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => {
-        console.log(`Server running on http://localhost:${PORT}`);
+
     });
 }
 

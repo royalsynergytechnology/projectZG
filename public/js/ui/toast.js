@@ -93,6 +93,70 @@ const Toast = {
         }
     },
 
+    // Progress toast for uploads
+    progress(message, title = 'Uploading...') {
+        if (!this.container) this.init();
+
+        const toast = document.createElement('div');
+        toast.className = `flex items-center gap-3 p-4 px-5 rounded-xl bg-white shadow-xl ring-1 ring-black/5 w-full md:w-auto md:min-w-[320px] md:max-w-[420px] relative overflow-hidden pointer-events-auto toast-enter`;
+        toast.setAttribute('data-progress-toast', 'true');
+
+        const icon = document.createElement('div');
+        icon.className = 'w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white bg-gradient-to-br from-primary to-purple-600';
+        icon.innerHTML = '<i class="fas fa-cloud-upload-alt"></i>';
+
+        const content = document.createElement('div');
+        content.className = 'flex-1';
+
+        const titleEl = document.createElement('div');
+        titleEl.className = 'font-bold text-sm text-gray-800 mb-1';
+        titleEl.textContent = title;
+
+        const messageEl = document.createElement('div');
+        messageEl.className = 'text-[13px] text-gray-500 leading-snug mb-2 progress-message';
+        messageEl.textContent = message;
+
+        const progressBar = document.createElement('div');
+        progressBar.className = 'w-full h-2 bg-gray-200 rounded-full overflow-hidden';
+
+        const progressFill = document.createElement('div');
+        progressFill.className = 'h-full bg-gradient-to-r from-primary to-purple-600 transition-all duration-300 progress-fill';
+        progressFill.style.width = '0%';
+
+        progressBar.appendChild(progressFill);
+        content.appendChild(titleEl);
+        content.appendChild(messageEl);
+        content.appendChild(progressBar);
+        toast.appendChild(icon);
+        toast.appendChild(content);
+
+        this.container.appendChild(toast);
+        return toast;
+    },
+
+    // Update progress toast percentage
+    updateProgress(toast, percent, message = null) {
+        if (!toast) return;
+        const fill = toast.querySelector('.progress-fill');
+        if (fill) fill.style.width = `${percent}%`;
+        if (message) {
+            const msg = toast.querySelector('.progress-message');
+            if (msg) msg.textContent = message;
+        }
+    },
+
+    // Complete progress toast (converts to success)
+    completeProgress(toast, message = 'Upload complete!') {
+        if (!toast) return;
+        this.updateProgress(toast, 100, message);
+        const icon = toast.querySelector('.w-10.h-10');
+        if (icon) {
+            icon.className = 'w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white bg-gradient-to-br from-emerald-500 to-emerald-600';
+            icon.innerHTML = '<i class="fas fa-check"></i>';
+        }
+        setTimeout(() => this.close(toast), 2000);
+    },
+
     success(message, title) { return this.show({ type: 'success', title, message }); },
     error(message, title) { return this.show({ type: 'error', title, message }); },
     warning(message, title) { return this.show({ type: 'warning', title, message }); },
