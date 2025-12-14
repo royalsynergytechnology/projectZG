@@ -10,10 +10,9 @@ const Config = (function () {
 
     // Determine API Base URL
     // If localhost/127.0.0.1, Development -> http://localhost:3000
-    // Otherwise, assume Production -> https://project-zg-community.vercel.app
     const isDev = hostname === 'localhost' || hostname === '127.0.0.1';
 
-    const API_BASE_URL = isDev ? 'http://localhost:3000' : 'https://projectzg.vercel.app';
+    const API_BASE_URL = isDev ? 'http://localhost:3000' : (hostname === 'project-zg-community.vercel.app' ? 'https://project-zg-community.vercel.app' : 'https://projectzg.vercel.app');
 
     return {
         API_URL: `${API_BASE_URL}/api`,
