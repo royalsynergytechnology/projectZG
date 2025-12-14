@@ -19,27 +19,14 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(o => o
 app.use(cors({
     origin: (origin, callback) => {
         // Allow requests with no origin (like mobile apps or curl requests) only if you specifically want to.
-        // The user asked to "remove allow orging", implying strictness. 
-        // However, standard CORS often allows no origin for non-browser clients. 
-        // Based on "explicitly make my project to use a list", we will be strict but standard non-browser tools might break if they don't send Origin.
-        // If the user meant "remove the block where I blindly allow things", this is correct.
         if (!origin) {
-            // OPTIONAL: block completely if you want 100% strictness for browsers-only (or tools spoofing Origin).
-            // For now, I'll log it and blocked it to be safe as per "remove allow orging".
-            // console.warn('CORS Blocked No Origin');
-            // return callback(new Error('Not allowed by CORS'));
-
-            // Actually, usually tools like Postman don't send Origin unless configured.
-            // Let's assume strictness means "check the list". If no origin, it's not in the list.
-            // BUT: Localhost tools effectively have no origin sometimes? No, `curl` has no origin.
-            // Let's stick to the plan: remove the `if (!origin)` check.
+            return callback(null, true);
         }
 
         const isDev = process.env.NODE_ENV !== 'production';
 
         // In dev, usually we want to allow localhost.
         // We can add localhost to the list dynamically or just check it.
-        // The user said: "including local host only when run in dev".
 
         if (isDev && (!origin || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1'))) {
             return callback(null, true);
