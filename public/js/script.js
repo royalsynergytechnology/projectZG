@@ -48,6 +48,10 @@ function getHeaders() {
 
 // --- Post Action Logic ---
 async function toggleLike(button, postId) {
+    if (!currentUser) {
+        showModal('authModal');
+        return;
+    }
     if (!postId) return;
 
     // Optimistic UI Update
@@ -77,6 +81,10 @@ async function toggleLike(button, postId) {
 }
 
 async function toggleBookmark(button, postId) {
+    if (!currentUser) {
+        showModal('authModal');
+        return;
+    }
     if (!postId) return;
 
     const isBookmarked = button.classList.toggle('text-primary'); // Using text-primary for bookmark active state
@@ -391,6 +399,14 @@ async function loadPublicProfile(username) {
             // Real comparison logic
             const isOwnProfile = currentUser && (currentUser.username === profile.username || currentUser.id === profile.id);
             renderProfileView(profile, isOwnProfile);
+
+            // If Guest, show the "Login to Connect" modal after a short delay or immediately
+            if (!currentUser) {
+                // User asked to "hide it with login modal". 
+                // We show it immediately.
+                setTimeout(() => showModal('authModal'), 500);
+            }
+
         } else {
             if (typeof Toast !== 'undefined') Toast.error("User not found");
         }
@@ -418,6 +434,10 @@ function updateUserContext(profile) {
 
 // --- Follow Logic ---
 async function toggleFollow(btn, userId) {
+    if (!currentUser) {
+        showModal('authModal');
+        return;
+    }
     if (!userId || btn.disabled) return;
 
     btn.disabled = true;
@@ -525,14 +545,26 @@ async function renderProfileView(profile, isOwnProfile) {
                 : 'bg-primary text-white';
             const followBtnText = isFollowing ? 'Following' : 'Follow';
 
-            actionsContainer.innerHTML = `
-                <button onclick="toggleFollow(this, '${profile.id}')" class="flex-1 py-3 font-semibold rounded-xl hover:opacity-90 transition-all duration-200 ${followBtnClass}">
-                    ${followBtnText}
-                </button>
-                <button class="py-3 px-6 border border-app text-main font-semibold rounded-xl hover:bg-hover-bg transition-colors duration-200">
-                    Message
-                </button>
-            `;
+            // Check if Guest
+            if (!currentUser) {
+                actionsContainer.innerHTML = `
+                    <button onclick="showModal('authModal')" class="flex-1 py-3 bg-primary text-white font-semibold rounded-xl hover:opacity-90 transition-all duration-200">
+                        Follow
+                    </button>
+                    <button onclick="showModal('authModal')" class="py-3 px-6 border border-app text-main font-semibold rounded-xl hover:bg-hover-bg transition-colors duration-200">
+                        Message
+                    </button>
+                `;
+            } else {
+                actionsContainer.innerHTML = `
+                    <button onclick="toggleFollow(this, '${profile.id}')" class="flex-1 py-3 font-semibold rounded-xl hover:opacity-90 transition-all duration-200 ${followBtnClass}">
+                        ${followBtnText}
+                    </button>
+                    <button class="py-3 px-6 border border-app text-main font-semibold rounded-xl hover:bg-hover-bg transition-colors duration-200">
+                        Message
+                    </button>
+                `;
+            }
         }
     }
 
@@ -740,7 +772,24 @@ async function handleLogout() {
 }
 
 // --- Initialization ---
-window.onload = () => {
+// --- Helpers ---
+async function identifyCurrentUser() {
+    try {
+        const res = await fetch(`${API_URL}/profile`, { headers: getHeaders() });
+        if (res.ok) {
+            const { profile } = await res.json();
+            currentUser = profile;
+            updateUserContext(profile);
+            return true;
+        }
+    } catch (err) {
+        // Guest mode, ignore
+    }
+    return false;
+}
+
+// --- Initialization ---
+window.onload = async () => {
     setTheme(getPreferredTheme());
     changeView(currentPage);
 
@@ -756,14 +805,26 @@ window.onload = () => {
         fileInput.addEventListener('change', handleFileSelect);
     }
 
-    // Check for user param in URL
+    setupInfiniteScroll();
+
+    // 1. Always try to identify user first
+    await identifyCurrentUser();
+
+    // 2. Routing Logic
     const urlParams = new URLSearchParams(window.location.search);
     const userParam = urlParams.get('user');
+
     if (userParam) {
+        // Shared Profile Link
         loadPublicProfile(userParam);
-    } else {
-        fetchProfile();
+    } else if (currentUser) {
+        // Authenticated Home
+        renderProfileView(currentUser, true);
+        // We can fetch posts here if needed for profile view, 
+        // but 'feed' is default view so fetchFeed() handles main content.
     }
+    // else Guest Home (Feed only)
+
     fetchFeed();
     fetchStories();
 };

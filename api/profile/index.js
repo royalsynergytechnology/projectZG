@@ -52,10 +52,12 @@ router.get('/profile/stories', authMiddleware, profile.getMyStories);
 // POST /api/profile/follow/:id
 router.post('/profile/follow/:id', authMiddleware, profile.followUser);
 
+const guestMiddleware = require('../../utils/guestMiddleware');
+
 // GET /api/profile/:username
-router.get('/profile/:username', authMiddleware, profile.getPublicProfile);
+router.get('/profile/:username', guestMiddleware, profile.getPublicProfile);
 
 // GET /api/profile/:username/posts
-router.get('/profile/:username/posts', authMiddleware, profile.getUserPosts);
+router.get('/profile/:username/posts', guestMiddleware, profile.getUserPosts);
 
 module.exports = router;

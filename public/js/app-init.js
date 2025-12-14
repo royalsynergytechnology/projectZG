@@ -43,8 +43,10 @@
             const path = window.location.pathname;
             const isAuthPage = path.includes('/auth');
             const isOnboarding = path.includes('/onboarding');
+            const search = new URLSearchParams(window.location.search);
+            const isPublicProfile = search.has('user');
 
-            if (!isAuthPage && !isOnboarding) {
+            if (!isAuthPage && !isOnboarding && !isPublicProfile) {
                 // Preserve query params (errors, etc) when redirecting
                 window.location.href = '/auth/' + window.location.search;
             }

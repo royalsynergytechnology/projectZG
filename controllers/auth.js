@@ -1,7 +1,7 @@
 const { supabase, createAuthenticatedClient } = require('../utils/supabaseClient');
 const crypto = require('crypto');
 
-// --- HELPER FUNCTIONS ---
+// - HELPER FUNCTIONS ---
 
 const setAuthCookies = (res, session) => {
     const cookieOptions = {

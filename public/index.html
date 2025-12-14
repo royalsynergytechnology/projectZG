@@ -430,6 +430,30 @@
             </div>
 
         </div>
+        </div>
+    </div>
+
+    <!-- Auth Required Modal (Guest View) -->
+    <div id="authModal" class="modal-backdrop z-50">
+        <div class="bg-surface rounded-xl shadow-xl w-full max-w-sm m-auto text-center p-8 transition-colors duration-300 border border-app relative">
+            <div class="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="lock" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl font-bold text-main mb-2">Login Required</h3>
+            <p class="text-secondary mb-6">Join the community to follow users, like posts, and share your own.</p>
+            
+            <a href="/auth/" class="block w-full py-3 bg-primary text-white font-semibold rounded-xl hover:opacity-90 transition-opacity duration-200 mb-3">
+                Log In
+            </a>
+            <a href="/auth/?mode=signup" class="block w-full py-3 border border-app text-main font-semibold rounded-xl hover:bg-hover-bg transition-colors duration-200">
+                Create Account
+            </a>
+            
+            <!-- Optional Close for "Just browsing" -->
+            <button onclick="hideModal('authModal')" class="absolute top-4 right-4 text-secondary hover:text-main">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
     </div>
     
     <!-- Toast Notifications -->

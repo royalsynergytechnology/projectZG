@@ -70,6 +70,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const searchParams = new URLSearchParams(window.location.search);
         const hashParams = new URLSearchParams(hash.substring(1));
 
+        // Public Profile Redirect: If 'user' param is present, redirect to main app immediately.
+        // The main app handles public profile views for both guests and auth users.
+        if (searchParams.has('user')) {
+            window.location.href = '/' + window.location.search;
+            return;
+        }
+
         // Capture onboarding status BEFORE clearing history
         const isOnboarding = path.includes('onboarding') ||
             hashParams.get('onboarding') === 'true' ||
