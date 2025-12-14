@@ -624,7 +624,7 @@ function setupInfiniteScroll() {
                 // Determine which feed we are on (main or profile) and load more
                 // For now, simpler implementation: just log it or dispatch event
                 // To do this properly, we need pagination state (page/offset)
-                console.log("Reached bottom of feed - Load More Trigger");
+
 
                 // Real logic placeholder removal:
                 // We'd call fetchFeed(page + 1) here.

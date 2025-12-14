@@ -165,7 +165,7 @@ const googleAuth = async (req, res) => {
         const cleanReqOrigin = requestOrigin.replace(/\/$/, '');
         const origin = allowedOrigins.find(o => o.replace(/\/$/, '') === cleanReqOrigin) || allowedOrigins[0];
 
-        console.log('[Auth-Start] Origins:', { requestOrigin, allowedOrigins, selectedOrigin: origin });
+
 
         if (!origin) {
             throw new Error('ALLOWED_ORIGIN or ALLOWED_ORIGINS environment variable must be set');
@@ -215,12 +215,7 @@ const googleAuth = async (req, res) => {
 const googleCallback = async (req, res) => {
     const { code, error, error_description } = req.query;
 
-    console.log('\n\n==================================================');
-    console.log('[Auth-Callback] HIT');
-    console.log('[Auth-Callback] URL:', req.originalUrl);
-    console.log('[Auth-Callback] Params:', { code: !!code, error, state: !!req.query.state });
-    console.log('[Auth-Callback] Cookies:', JSON.stringify(req.cookies));
-    console.log('==================================================\n\n');
+
 
     if (error) {
         const description = error_description || 'Unknown error';
@@ -268,13 +263,7 @@ const googleCallback = async (req, res) => {
             .eq('id', session.user.id)
             .single();
 
-        console.log('[Auth-Callback] Profile Check:', {
-            id: session.user.id,
-            hasProfile: !!profile,
-            username: profile?.username,
-            gender: profile?.gender,
-            error: profileError?.message
-        });
+
 
         // Construct cleanup hash for client-side token handoff
         const hash = `access_token=${session.access_token}&refresh_token=${session.refresh_token}`;
@@ -282,11 +271,9 @@ const googleCallback = async (req, res) => {
         // Ensure username is not just an empty string and GENDER is set
         if (profile && profile.username && profile.username.trim() !== '' && profile.gender) {
             // Existing user -> Home
-            console.log('[Auth-Callback] Redirecting to Home');
             res.redirect(302, `/#${hash}`);
         } else {
             // New user -> Onboarding
-            console.log('[Auth-Callback] Redirecting to Onboarding');
             // Use query param which auth.js already looks for
             res.redirect(302, `/auth?onboarding=true#${hash}`);
         }

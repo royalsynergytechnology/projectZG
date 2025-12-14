@@ -14,7 +14,7 @@ exports.getProfile = async (req, res) => {
         if (!profile && error && error.code === 'PGRST116') {
             const metadata = req.user.user_metadata || {};
             // Generate a default username if missing
-            const defaultUsername = metadata.username || `user_${userId.substr(0, 8)}`;
+            const defaultUsername = metadata.username || `${userId.substr(0, 8)}`;
 
             const { data: newProfile, error: createError } = await supabase
                 .from('profiles')
