@@ -20,26 +20,30 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(o => o
 
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps or curl requests) only if you specifically want to.
+        // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) {
             return callback(null, true);
         }
 
         const isDev = process.env.NODE_ENV !== 'production';
 
-        // In dev, usually we want to allow localhost.
-        // We can add localhost to the list dynamically or just check it.
-
-        if (isDev && (!origin || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1'))) {
+        // 1. Allow Localhost in Dev
+        if (isDev && (origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1'))) {
             return callback(null, true);
         }
 
+        // 2. Allow specific Allowed Origins (Env Var)
         if (allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            console.warn('CORS Blocked Origin:', origin);
-            callback(new Error('Not allowed by CORS'));
+            return callback(null, true);
         }
+
+        // 3. Allow all Vercel Preview/Production URLs (*.vercel.app)
+        if (origin.endsWith('.vercel.app')) {
+            return callback(null, true);
+        }
+
+        console.warn('CORS Blocked Origin:', origin);
+        callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

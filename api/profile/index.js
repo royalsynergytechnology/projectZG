@@ -3,6 +3,11 @@ const router = express.Router();
 const authMiddleware = require('../../utils/authMiddleware');
 const profile = require('../../controllers/profile');
 
+// SAFETY CHECK: Ensure critical handlers are loaded
+if (!authMiddleware) throw new Error('critical: authMiddleware is undefined in api/profile');
+if (!profile.getProfile) throw new Error('critical: profile.getProfile is undefined in api/profile');
+if (!profile.getFeed) throw new Error('critical: profile.getFeed is undefined in api/profile');
+
 // --- Feed & Posts ---
 // GET /api/posts - Fetch Feed
 router.get('/posts', authMiddleware, profile.getFeed);
