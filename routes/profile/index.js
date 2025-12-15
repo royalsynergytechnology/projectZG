@@ -4,9 +4,22 @@ const authMiddleware = require('../../utils/authMiddleware');
 const profile = require('../../controllers/profile');
 
 // SAFETY CHECK: Ensure critical handlers are loaded
-if (!authMiddleware) throw new Error('critical: authMiddleware is undefined in api/profile');
-if (!profile.getProfile) throw new Error('critical: profile.getProfile is undefined in api/profile');
-if (!profile.getFeed) throw new Error('critical: profile.getFeed is undefined in api/profile');
+const requiredMethods = [
+    'getFeed', 'createPost', 'toggleLike', 'toggleBookmark', 'toggleRepost',
+    'getComments', 'createComment', 'UpdatePost', 'DeletePost',
+    'UpdateComment', 'DeleteComment', 'getActiveStories', 'createStory',
+    'getMyProfile', 'getProfile', 'updateProfile', 'getMyPosts',
+    'getBookmarkedPosts', 'getTaggedPosts', 'getMyStories',
+    'followUser', 'getPublicProfile', 'getUserPosts',
+    'getNotifications', 'getConfig'
+];
+
+requiredMethods.forEach(method => {
+    if (typeof profile[method] !== 'function') {
+        throw new Error(`CRITICAL: profile.${method} is undefined in api/profile/index.js`);
+    }
+});
+if (typeof authMiddleware !== 'function') throw new Error('critical: authMiddleware is undefined');
 
 // --- Feed & Posts ---
 // GET /api/posts - Fetch Feed
