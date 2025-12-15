@@ -4,14 +4,11 @@ const { supabase, createAuthenticatedClient } = require('../utils/supabaseClient
 exports.getProfile = async (req, res) => {
     try {
         const userId = req.user.id;
-        const token = req.cookies['sb-access-token'] ||
-            (req.headers.authorization && req.headers.authorization.split(' ')[1]);
 
-        let client = supabase;
-        if (token) {
-            const authClient = await createAuthenticatedClient(token);
-            if (authClient) client = authClient;
-        }
+        // Use Admin client for own profile to bypass RLS/Permission weirdness on "public" profiles table
+        // if the user is already authenticated via middleware.
+        const { supabaseAdmin, supabase } = require('../utils/supabaseClient');
+        const client = supabaseAdmin || supabase;
 
         let { data: profile, error } = await client
             .from('profiles')
