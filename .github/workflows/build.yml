@@ -40,7 +40,7 @@ jobs:
         shell: bash
 
       - name: Upload audit JSON artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: audit-json
           path: audit.json
