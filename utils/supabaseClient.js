@@ -75,7 +75,7 @@ const createContextClient = (req, res) => {
                     const safeOptions = {
                         ...options,
                         sameSite: 'lax',
-                        secure: process.env.NODE_ENV === 'production'
+                        secure: process.env.VERCEL_ENV === 'production'
                     };
                     if (!res.headersSent) {
                         res.cookie(name, value, safeOptions);

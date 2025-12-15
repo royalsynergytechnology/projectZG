@@ -25,7 +25,7 @@ app.use(cors({
             return callback(null, true);
         }
 
-        const isDev = process.env.NODE_ENV !== 'production';
+        const isDev = process.env.VERCEL_ENV !== 'production';
 
         // 1. Allow Localhost in Dev
         if (isDev && (origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1'))) {
@@ -126,7 +126,7 @@ app.use((req, res, next) => {
 
 
 // Only listen if run directly (local dev), otherwise export for Vercel
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.VERCEL_ENV !== 'production') {
     app.listen(PORT, () => {
 
     });

@@ -5,12 +5,10 @@ const imagekit = require('../utils/imagekit');
 
 // - HELPER FUNCTIONS ---
 
-// - HELPER FUNCTIONS ---
-
 const setAuthCookies = (res, session) => {
     const cookieOptions = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: process.env.VERCEL_ENV === 'production',
         sameSite: 'lax',
         path: '/',
         maxAge: (session.expires_in || 3600) * 1000
@@ -195,7 +193,7 @@ const googleAuth = async (req, res) => {
         let origin = allowedOrigins.find(o => o.replace(/\/$/, '') === cleanReqOrigin);
 
         // In development, explicitly allow localhost if it's the request origin
-        if (!origin && process.env.NODE_ENV !== 'production' && (cleanReqOrigin.includes('localhost') || cleanReqOrigin.includes('127.0.0.1'))) {
+        if (!origin && process.env.VERCEL_ENV !== 'production' && (cleanReqOrigin.includes('localhost') || cleanReqOrigin.includes('127.0.0.1'))) {
             origin = cleanReqOrigin;
         }
 
