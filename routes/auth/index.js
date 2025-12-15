@@ -26,8 +26,9 @@ router.post('/signup', auth.signup);
 // 2. LOGIN
 router.post('/login', auth.login);
 
-// 3. GOOGLE OAUTH
+// 3. OAUTH
 router.get('/google', auth.googleAuth);
+router.get('/github', auth.githubAuth);
 
 // 4. CALLBACK
 router.get('/callback', auth.googleCallback);

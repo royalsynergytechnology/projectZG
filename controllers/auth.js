@@ -180,8 +180,7 @@ const googleAuth = async (req, res) => {
         // In local dev: http://localhost:3000
         // In prod: process.env.ALLOWED_ORIGIN or derived from req with whitelist check
         const rawOrigins = [
-            process.env.ALLOWED_ORIGINS,
-            process.env.ALLOWED_ORIGIN
+            process.env.ALLOWED_ORIGINS
         ].filter(Boolean).join(',');
 
         const allowedOrigins = rawOrigins.split(',').map(o => o.trim()).filter(Boolean);
@@ -203,7 +202,7 @@ const googleAuth = async (req, res) => {
         }
 
         if (!origin) {
-            throw new Error('ALLOWED_ORIGIN or ALLOWED_ORIGINS environment variable must be set');
+            throw new Error('ALLOWED_ORIGINS environment variable must be set');
         }
 
         // Use request-scoped client to handle code verifier cookie
@@ -240,7 +239,78 @@ const googleAuth = async (req, res) => {
             error: 'Internal Server Error',
             details: err.message,
             env_check: {
-                has_origin: !!process.env.ALLOWED_ORIGIN,
+                has_origins: !!process.env.ALLOWED_ORIGINS
+            }
+        });
+    }
+};
+
+
+const githubAuth = async (req, res) => {
+    try {
+        // Construct the base URL for redirection 
+        // In local dev: http://localhost:3000
+        // In prod: process.env.ALLOWED_ORIGIN or derived from req with whitelist check
+        const rawOrigins = [
+            process.env.ALLOWED_ORIGINS
+        ].filter(Boolean).join(',');
+
+        const allowedOrigins = rawOrigins.split(',').map(o => o.trim()).filter(Boolean);
+        const requestOrigin = `${req.protocol}://${req.get('host')}`;
+
+        // Check if request origin is allowed, otherwise default to first allowed
+        // strip trailing slashes for comparison to be safe
+        const cleanReqOrigin = requestOrigin.replace(/\/$/, '');
+        let origin = allowedOrigins.find(o => o.replace(/\/$/, '') === cleanReqOrigin);
+
+        // In development, explicitly allow localhost if it's the request origin
+        if (!origin && process.env.VERCEL_ENV !== 'production' && (cleanReqOrigin.includes('localhost') || cleanReqOrigin.includes('127.0.0.1'))) {
+            origin = cleanReqOrigin;
+        }
+
+        // Fallback to first allowed origin (Production behavior)
+        if (!origin) {
+            origin = allowedOrigins[0];
+        }
+
+        if (!origin) {
+            throw new Error('ALLOWED_ORIGINS environment variable must be set');
+        }
+
+        // Use request-scoped client to handle code verifier cookie
+        const supabaseClient = require('../utils/supabaseClient').createContextClient(req, res);
+
+        if (!supabaseClient) {
+            console.error('Supabase client is not initialized. Check server environment variables.');
+            return res.status(500).json({ error: 'Database connection unavailable' });
+        }
+
+        const { data, error } = await supabaseClient.auth.signInWithOAuth({
+            provider: 'github',
+            options: {
+                redirectTo: `${origin}/api/auth/callback`,
+                queryParams: {
+                    access_type: 'offline',
+                    prompt: 'consent'
+                }
+            }
+        });
+
+        if (error) throw error;
+
+        if (data.url) {
+            // Redirect the user to the GitHub OAuth consent page
+            res.redirect(data.url);
+        } else {
+            res.status(500).json({ error: 'Failed to generate OAuth URL' });
+        }
+
+    } catch (err) {
+        console.error('OAuth Error:', err);
+        res.status(500).json({
+            error: 'Internal Server Error',
+            details: err.message,
+            env_check: {
                 has_origins: !!process.env.ALLOWED_ORIGINS
             }
         });
@@ -619,6 +689,7 @@ module.exports = {
     signup,
     login,
     googleAuth,
+    githubAuth,
     googleCallback,
     getMe,
     logout,

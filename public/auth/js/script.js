@@ -141,6 +141,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.user) {
                     store.dispatch(Actions.setUser(data.user));
 
+                    // Pre-fill username for onboarding if available
+                    if (isOnboarding || window.location.pathname.includes('onboarding')) {
+                        try {
+                            const profileRes = await fetch(`${API_URL}/me`, { headers: headers }); // /api/me returns profile joined with user
+                            if (profileRes.ok) {
+                                const profileData = await profileRes.json();
+
+                                // Strictly handle response from /api/me (controllers/profile.js -> getMyProfile)
+                                // Returns: { profile: { ... } }
+                                if (profileData.profile && profileData.profile.username) {
+                                    let username = profileData.profile.username;
+
+                                    // Clean up username if it's an email (remove @domain)
+                                    if (username && username.includes('@')) {
+                                        username = username.split('@')[0];
+                                    }
+
+                                    const usernameInput = document.getElementById('ob-username');
+
+                                    if (usernameInput) {
+                                        usernameInput.value = username;
+                                        store.dispatch(Actions.updateOnboardingData({ username }));
+                                    }
+                                }
+                            }
+                        } catch (err) {
+                            console.warn('Failed to pre-fill username', err);
+                        }
+                    }
+
                     // If we are NOT onboarding, and the user is logged in, redirect to home.
                     // If we ARE onboarding (passed from handleInitialRoute), stay here.
                     if (!isOnboarding && !window.location.pathname.includes('onboarding') && store.getState().view === 'auth') {
@@ -440,8 +470,10 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             if (btn.id && btn.id.includes('google')) {
                 window.location.href = `${API_URL}/auth/google`;
+            } else if (btn.id && btn.id.includes('github')) {
+                window.location.href = `${API_URL}/auth/github`;
             } else {
-                showToast('info', "Social login is currently limited to Google.", "Coming Soon");
+                showToast('info', "Social login is currently limited to Google and GitHub.", "Coming Soon");
             }
         });
     });

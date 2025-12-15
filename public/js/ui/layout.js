@@ -46,7 +46,7 @@
         return `
         <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 py-3 px-6 transition-all duration-300 md:px-3 md:py-2">
             <div class="max-w-7xl mx-auto flex justify-between items-center">
-                <a href="${config.basePath}" class="flex items-center gap-2 no-underline text-primary font-extrabold text-xl transition-opacity duration-200 hover:opacity-80 md:text-base md:gap-1.5">
+                <a href="${config.basePath}" id="app-logo" class="flex items-center gap-2 no-underline text-primary font-extrabold text-xl transition-opacity duration-200 hover:opacity-80 md:text-base md:gap-1.5">
                     <img src="${config.basePath}img/ico/icons8-dev-community-color-48.png" alt="ProjectZG Logo" class="w-8 h-8 md:w-6 md:h-6">
                     <span>ProjectZG</span>
                 </a>
@@ -104,6 +104,28 @@
 
         // Insert header at the beginning of body
         document.body.insertAdjacentHTML('afterbegin', createHeader());
+
+        // Intercept Logo Click handles for Onboarding
+        const logo = document.getElementById('app-logo');
+        if (logo) {
+            const isAuthPage = window.location.pathname.includes('/auth');
+            // Check for onboarding params/hash similar to script.js
+            const isOnboarding = isAuthPage && (
+                window.location.search.includes('onboarding=true') ||
+                window.location.hash.includes('onboarding')
+            );
+
+            if (isOnboarding) {
+                logo.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (typeof Toast !== 'undefined') {
+                        Toast.warning('Please complete your profile setup to continue.', 'Setup Required');
+                    } else {
+                        alert('Please complete your profile setup to continue.');
+                    }
+                });
+            }
+        }
 
         // Insert footer before scripts
         const scripts = document.body.querySelectorAll('script');

@@ -64,14 +64,41 @@ returns trigger
 language plpgsql
 security definer
 as $$
+declare
+  _username text;
+  _full_name text;
+  _avatar_url text;
 begin
-  insert into public.profiles (id, username, full_name, avatar_url)
-  values (
-    new.id,
-    new.raw_user_meta_data->>'username',
-    new.raw_user_meta_data->>'full_name',
-    new.raw_user_meta_data->>'avatar_url'
+  -- Extract metadata with fallbacks
+  _username := COALESCE(
+    new.raw_user_meta_data->>'username', 
+    new.raw_user_meta_data->>'user_name', 
+    new.raw_user_meta_data->>'preferred_username',
+    split_part(new.raw_user_meta_data->>'email', '@', 1),
+    'user_' || substr(md5(random()::text), 1, 8)
   );
+  
+  -- Clean username (ensure it doesnt have invalid chars if pulled from email/name, mostly robust enough for now)
+  -- Or just trust the fallback loop below
+  
+  _full_name := new.raw_user_meta_data->>'full_name';
+  _avatar_url := new.raw_user_meta_data->>'avatar_url';
+
+  -- Try insert
+  begin
+    insert into public.profiles (id, username, full_name, avatar_url)
+    values (new.id, _username, _full_name, _avatar_url);
+  exception when unique_violation then
+    -- Fallback to ID-based username if taken
+    insert into public.profiles (id, username, full_name, avatar_url)
+    values (
+      new.id, 
+      'user_' || substr(new.id::text, 1, 8), 
+      _full_name, 
+      _avatar_url
+    );
+  end;
+
   return new;
 end;
 $$;
