@@ -44,16 +44,16 @@
 
 
         return `
-        <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 py-3 px-6 transition-all duration-300 md:px-3 md:py-2">
+        <header class="fixed top-0 left-0 right-0 z-50 bg-(--glass-bg) backdrop-blur-(--glass-blur) border-b border-(--glass-border) py-3 px-6 transition-all duration-300 md:px-3 md:py-2">
             <div class="max-w-7xl mx-auto flex justify-between items-center">
                 <a href="${config.basePath}" id="app-logo" class="flex items-center gap-2 no-underline text-primary font-extrabold text-xl transition-opacity duration-200 hover:opacity-80 md:text-base md:gap-1.5">
                     <img src="${config.basePath}img/ico/icons8-dev-community-color-48.png" alt="ProjectZG Logo" class="w-8 h-8 md:w-6 md:h-6">
                     <span>ProjectZG</span>
                 </a>
                 <nav class="flex items-center gap-6 md:gap-3">
-                    <a href="${config.basePath}auth/" class="text-gray-500 no-underline text-sm font-medium transition-colors duration-200 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 md:text-xs ${page === 'signin' || page === 'signup' ? 'text-primary' : ''}">Sign In</a>
-                    <a href="${config.basePath}" class="text-gray-500 no-underline text-sm font-medium transition-colors duration-200 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 md:text-xs">Home</a>
-                    <a href="#" class="text-gray-500 no-underline text-sm font-medium transition-colors duration-200 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 md:text-xs">About</a>
+                    <a href="${config.basePath}auth/" class="text-secondary no-underline text-sm font-medium transition-colors duration-200 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 md:text-xs ${page === 'signin' || page === 'signup' ? 'text-primary' : ''}">Sign In</a>
+                    <a href="${config.basePath}" class="text-secondary no-underline text-sm font-medium transition-colors duration-200 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 md:text-xs">Home</a>
+                    <a href="#" class="text-secondary no-underline text-sm font-medium transition-colors duration-200 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 md:text-xs">About</a>
                 </nav>
             </div>
         </header>
@@ -65,28 +65,28 @@
         const year = new Date().getFullYear();
 
         return `
-        <footer class="relative w-full z-50 bg-white/95 backdrop-blur-md border-t border-gray-100 py-2 px-6 mt-auto md:fixed md:bottom-0 md:left-0 md:right-0 md:border-none md:mt-0">
+        <footer class="relative w-full z-50 bg-(--glass-bg) backdrop-blur-(--glass-blur) border-t border-(--glass-border) py-2 px-6 mt-auto md:fixed md:bottom-0 md:left-0 md:right-0 md:border-none md:mt-0">
             <div class="w-full mx-auto flex flex-col items-center gap-3 md:gap-2">
                 <div class="flex gap-4 md:gap-2">
-                    <a href="https://github.com/CodeWithHafi" target="_blank" rel="noopener noreferrer" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 no-underline transition-all duration-200 hover:bg-primary hover:text-white hover:-translate-y-0.5 md:w-6 md:h-6 md:text-[0.7rem]" title="GitHub">
+                    <a href="https://github.com/CodeWithHafi" target="_blank" rel="noopener noreferrer" class="w-8 h-8 flex items-center justify-center rounded-full glass-button-secondary text-secondary no-underline transition-all duration-200 hover:bg-primary hover:text-white hover:-translate-y-0.5 md:w-6 md:h-6 md:text-[0.7rem]" title="GitHub">
                         <i class="fab fa-github"></i>
                     </a>
-                    <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 no-underline transition-all duration-200 hover:bg-primary hover:text-white hover:-translate-y-0.5 md:w-6 md:h-6 md:text-[0.7rem]" title="Twitter">
+                    <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="w-8 h-8 flex items-center justify-center rounded-full glass-button-secondary text-secondary no-underline transition-all duration-200 hover:bg-primary hover:text-white hover:-translate-y-0.5 md:w-6 md:h-6 md:text-[0.7rem]" title="Twitter">
                         <i class="fab fa-twitter"></i>
                     </a>
-                    <a href="https://discord.com" target="_blank" rel="noopener noreferrer" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 no-underline transition-all duration-200 hover:bg-primary hover:text-white hover:-translate-y-0.5 md:w-6 md:h-6 md:text-[0.7rem]" title="Discord">
+                    <a href="https://discord.com" target="_blank" rel="noopener noreferrer" class="w-8 h-8 flex items-center justify-center rounded-full glass-button-secondary text-secondary no-underline transition-all duration-200 hover:bg-primary hover:text-white hover:-translate-y-0.5 md:w-6 md:h-6 md:text-[0.7rem]" title="Discord">
                         <i class="fab fa-discord"></i>
                     </a>
-                    <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 no-underline transition-all duration-200 hover:bg-primary hover:text-white hover:-translate-y-0.5 md:w-6 md:h-6 md:text-[0.7rem]" title="LinkedIn">
+                    <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="w-8 h-8 flex items-center justify-center rounded-full glass-button-secondary text-secondary no-underline transition-all duration-200 hover:bg-primary hover:text-white hover:-translate-y-0.5 md:w-6 md:h-6 md:text-[0.7rem]" title="LinkedIn">
                         <i class="fab fa-linkedin-in"></i>
                     </a>
                 </div>
                 <div class="flex flex-wrap justify-center gap-4 md:gap-2">
-                    <a href="#" class="text-gray-500 no-underline text-xs transition-colors duration-200 hover:text-primary md:text-[0.6rem]">Privacy Policy</a>
-                    <a href="#" class="text-gray-500 no-underline text-xs transition-colors duration-200 hover:text-primary md:text-[0.6rem]">Terms of Service</a>
-                    <a href="#" class="text-gray-500 no-underline text-xs transition-colors duration-200 hover:text-primary md:text-[0.6rem]">Community Guidelines</a>
-                    <a href="#" class="text-gray-500 no-underline text-xs transition-colors duration-200 hover:text-primary md:text-[0.6rem]">Help & Support</a>
-                    <a href="#" class="text-gray-500 no-underline text-xs transition-colors duration-200 hover:text-primary md:text-[0.6rem]">Contact Us</a>
+                    <a href="#" class="text-secondary no-underline text-xs transition-colors duration-200 hover:text-primary md:text-[0.6rem]">Privacy Policy</a>
+                    <a href="#" class="text-secondary no-underline text-xs transition-colors duration-200 hover:text-primary md:text-[0.6rem]">Terms of Service</a>
+                    <a href="#" class="text-secondary no-underline text-xs transition-colors duration-200 hover:text-primary md:text-[0.6rem]">Community Guidelines</a>
+                    <a href="#" class="text-secondary no-underline text-xs transition-colors duration-200 hover:text-primary md:text-[0.6rem]">Help & Support</a>
+                    <a href="#" class="text-secondary no-underline text-xs transition-colors duration-200 hover:text-primary md:text-[0.6rem]">Contact Us</a>
                 </div>
                 <p class="text-gray-400 text-[0.7rem] text-center md:text-[0.6rem] md:mt-1">© ${year} ProjectZG. All rights reserved.</p>
             </div>

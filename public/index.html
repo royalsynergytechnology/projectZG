@@ -38,7 +38,7 @@
     <div id="app-container" class="flex flex-col md:flex-row min-h-screen">
 
         <!-- 1. RESPONSIVE SIDEBAR/NAVBAR (Desktop Sidebar) -->
-        <nav id="sidebar" class="fixed top-0 left-0 h-screen hidden md:flex flex-col bg-surface p-4 lg:p-6 w-20 lg:w-64 transition-all duration-300 shrink-0 z-20">
+        <nav id="sidebar" class="fixed top-4 left-4 h-[calc(100vh-2rem)] hidden md:flex flex-col glass-panel p-4 lg:p-6 w-20 lg:w-64 transition-all duration-300 shrink-0 z-20 rounded-2xl border-white/10 shadow-xl">
             <div class="mb-6 lg:mb-10">
                 <span class="text-2xl font-bold text-primary hidden lg:inline">ProjectZG</span>
             </div>
@@ -67,7 +67,7 @@
                 </button>
                 
                 <!-- Desktop Post Button -->
-                <button onclick="showModal('createPostModal')" class="post-button bg-primary text-white rounded-xl shadow-lg mt-4 w-12 h-12 lg:w-full lg:h-auto p-3 flex items-center justify-center lg:justify-start hover:opacity-90 transition-opacity duration-200">
+                <button onclick="showModal('createPostModal')" class="post-button glass-button text-white rounded-xl shadow-lg mt-4 w-12 h-12 lg:w-full lg:h-auto p-3 flex items-center justify-center lg:justify-start hover:opacity-90 transition-opacity duration-200">
                     <i data-lucide="plus" class="w-6 h-6"></i>
                     <span class="font-semibold ml-2 hidden lg:inline">Post</span>
                 </button>
@@ -88,47 +88,46 @@
         </nav>
 
         <!-- Main Content Area -->
-        <main class="main-content grow w-full md:ml-20 lg:ml-64 p-4 md:p-6 lg:p-8 pb-20 md:pb-6 transition-all duration-300">
-            <div class="max-w-4xl mx-auto">
+        <main class="main-content grow w-full md:ml-28 lg:ml-72 p-4 md:p-6 lg:p-8 pb-32 md:pb-6 transition-all duration-300">
+            <div class="max-w-7xl mx-auto">
             
                 <!-- 2. FEED VIEW -->
                 <div id="feedView" class="view-content space-y-6">
-                    <div class="flex items-center justify-between">
-                         <h1 class="text-3xl font-bold text-main">Home Feed</h1>
-                         <!-- Desktop-only refresh or extra actons could go here -->
+                    
+                    <!-- Centered Tabs (Following / All) -->
+                    <div class="flex flex-col items-center sticky top-0 z-50 pt-2 pb-4 bg-transparent backdrop-blur-xl">
+                         <div class="relative bg-white/5 p-1 rounded-full flex items-center border border-white/5 shadow-inner">
+                             <!-- Sliding Pill -->
+                             <div id="feed-tab-indicator" class="absolute left-1 top-1 bottom-1 w-[calc(50%-4px)] bg-primary rounded-full transition-all duration-300 ease-out shadow-lg z-0"></div>
+                             
+                             <button onclick="SwitchFeedFilter('following')" id="tab-following" class="relative z-10 w-28 py-2 text-sm font-bold text-white transition-colors duration-200 text-center">Following</button>
+                             <button onclick="SwitchFeedFilter('all')" id="tab-all" class="relative z-10 w-28 py-2 text-sm font-medium text-secondary hover:text-white transition-colors duration-200 text-center">All</button>
+                         </div>
                     </div>
 
-                    <!-- Stories Section -->
-                    <div class="bg-surface p-4 rounded-xl shadow-md transition-colors duration-300 border border-app overflow-hidden">
-                        <div class="flex justify-between items-center mb-4 border-b border-app pb-2">
-                            <div class="flex space-x-4" id="feed-filter-tabs">
-                                <button onclick="SwitchFeedFilter('following')" class="feed-tab font-semibold text-primary border-b-2 border-primary pb-1 transition-colors duration-200">Following</button>
-                                <button onclick="SwitchFeedFilter('all')" class="feed-tab text-secondary hover:text-primary pb-1 transition-colors duration-200">All</button>
-                            </div>
-                        </div>
-                        
+                    <!-- Stories Section (Seamless) -->
+                    <div class="w-full overflow-hidden mb-4">
                         <div id="story-list-container">
-                            <div id="story-list" class="flex overflow-x-auto space-x-4 pb-2 scrollbar-hide">
+                            <div id="story-list" class="flex overflow-x-auto space-x-4 pb-2 scrollbar-hide px-2">
                                 <!-- Story 1: Your Story (Template for Cloning) -->
                                 <div class="story-item flex flex-col items-center shrink-0 w-16 cursor-pointer transform hover:scale-105 transition-transform" data-story-template>
-                                    <div class="relative w-14 h-14 rounded-full border-2 border-primary p-0.5">
-                                        <img id="user-story-avatar" src="https://placehold.co/52x52/5002d09b/ffffff?text=YOU" class="w-full h-full rounded-full object-cover" alt="Your Story" onerror="this.onerror=null;this.src='https://placehold.co/52x52/5002d09b/ffffff?text=YOU'">
-                                        <div class="absolute -bottom-1 -right-1 bg-primary text-white rounded-full p-1 text-xs border-2 border-surface">
+                                    <div class="relative w-16 h-16 rounded-full border-2 border-primary p-0.5">
+                                        <img id="user-story-avatar" src="https://placehold.co/60x60/5002d09b/ffffff?text=YOU" class="w-full h-full rounded-full object-cover" alt="Your Story" onerror="this.onerror=null;this.src='https://placehold.co/60x60/5002d09b/ffffff?text=YOU'">
+                                        <div class="absolute -bottom-1 -right-1 bg-primary text-white rounded-full p-1 text-xs border-2 border-black">
                                             <i data-lucide="plus" class="w-3 h-3"></i>
                                         </div>
                                     </div>
-                                    <span class="text-xs mt-1 text-secondary text-center truncate w-full">You</span>
+                                    <span class="text-xs mt-2 text-secondary text-center truncate w-full">You</span>
                                 </div>
                                 <!-- Initial Stories (CLEARED until Dynamic) -->
                             </div>
-                            <!-- Removed sentinel for simple horizontal scroll if empty -->
                         </div>
                     </div>
 
                     <!-- Post Feed -->
                     <div id="post-feed" class="space-y-6">
                         <!-- Post Cards Cleared until Dynamic -->
-                        <div class="text-center py-10 text-secondary bg-surface rounded-xl border border-app">
+                        <div class="text-center py-10 text-secondary glass-panel rounded-xl border border-white/10">
                             <i data-lucide="newspaper" class="w-12 h-12 mx-auto mb-3 opacity-20"></i>
                             <p>No posts yet. Be the first to post!</p>
                         </div>
@@ -143,7 +142,7 @@
 
                 <!-- 3. NOTIFICATIONS VIEW -->
                 <div id="notificationsView" class="view-content hidden">
-                    <div class="bg-surface p-6 rounded-xl shadow-md max-w-lg mx-auto transition-colors duration-300 border border-app">
+                    <div class="glass-panel p-6 rounded-2xl shadow-xl max-w-3xl mx-auto transition-colors duration-300">
                         <h2 class="text-2xl font-bold text-main mb-4">Notifications</h2>
                         <p class="text-secondary">This section will show recent likes, comments, and new followers, once the backend is integrated.</p>
                         <div class="mt-4 space-y-4">
@@ -157,27 +156,31 @@
 
                 <!-- 4. SEARCH VIEW (New View) -->
                 <div id="searchView" class="view-content hidden">
-                    <div class="bg-surface p-6 rounded-xl shadow-md max-w-lg mx-auto transition-colors duration-300 border border-app min-h-[500px] flex flex-col">
-                        <h2 class="text-2xl font-bold text-main mb-4">Search</h2>
+                    <div class="w-full max-w-3xl mx-auto transition-colors duration-300 min-h-[500px] flex flex-col">
+                        <div class="flex items-center justify-between mb-4 px-4 md:px-0">
+                             <h2 class="text-2xl font-bold text-main">Explore & Trending</h2>
+                        </div>
                         
-                        <div class="relative mb-6">
-                            <i data-lucide="search" class="absolute left-3 top-3.5 w-5 h-5 text-secondary"></i>
-                            <input type="text" id="search-input" placeholder="Search for users or hashtags..." class="w-full pl-10 p-3 border border-app rounded-xl bg-bg text-main focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                        <div class="relative mb-6 px-4 md:px-0">
+                            <i data-lucide="search" class="absolute left-7 md:left-3 top-3.5 w-5 h-5 text-secondary"></i>
+                            <input type="text" id="search-input" placeholder="Search for users or hashtags..." class="w-full pl-10 p-3 glass-input rounded-xl text-main focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                         </div>
 
                         <div id="search-results" class="flex-1 overflow-y-auto space-y-1">
-                             <!-- Initial State -->
-                            <div class="text-center py-10 text-secondary opacity-50">
-                                <i data-lucide="search" class="w-12 h-12 mx-auto mb-3"></i>
-                                <p>Start typing to explore...</p>
-                            </div>
+                             <!-- Trending Grid Container -->
+                             <div id="trending-grid" class="grid grid-cols-2 md:grid-cols-3 gap-1 pb-20">
+                                 <!-- Dynamic Trending Posts will be injected here -->
+                                 <div class="col-span-full text-center py-8">
+                                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                                 </div>
+                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Profile View -->
                 <div id="profileView" class="view-content hidden">
-                    <div class="bg-surface p-6 rounded-xl shadow-md max-w-lg mx-auto transition-colors duration-300 border border-app">
+                    <div class="w-full max-w-3xl mx-auto transition-colors duration-300">
                         <!-- Header -->
                         <div class="flex items-center justify-between mb-6">
                             <button onclick="changeView('feed')" class="text-secondary hover:text-primary transition-colors duration-200">
@@ -198,7 +201,7 @@
                             <p id="profile-display-bio" class="text-sm text-main mt-2 max-w-sm"></p>
 
                             <!-- Stats -->
-                            <div class="flex justify-around w-full mt-4 p-3 bg-hover-bg rounded-xl transition-colors duration-300 border border-app">
+                            <div class="flex justify-around w-full mt-4 p-2 rounded-xl transition-colors duration-300">
                                 <div class="flex flex-col items-center">
                                     <span class="text-xl font-bold text-main">0</span>
                                     <span class="text-sm text-secondary">Posts</span>
@@ -215,24 +218,24 @@
 
 
                             <!-- Actions -->
-                            <div class="flex space-x-4 mt-6 w-full">
-                                <button onclick="showModal('editProfileModal')" class="flex-1 py-3 bg-primary text-white font-semibold rounded-xl hover:opacity-90 transition-opacity duration-200">
+                            <div class="flex items-center justify-center space-x-3 mt-6 w-full max-w-sm mx-auto">
+                                <button onclick="showModal('editProfileModal')" class="flex-1 py-2 glass-button text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity duration-200">
                                     Edit Profile
                                 </button>
-                                <button class="py-3 px-6 border border-app text-main font-semibold rounded-xl hover:bg-hover-bg transition-colors duration-200">
-                                    Share
+                                <button class="p-2 glass-button-secondary text-main rounded-lg hover:bg-white/10 transition-colors duration-200" title="Share">
+                                    <i data-lucide="share-2" class="w-5 h-5"></i>
                                 </button>
                             </div>
 
                             <!-- Tabs -->
-                            <div class="flex justify-around w-full border-b border-app mt-8">
-                                <button onclick="SwitchProfileTab('posts')" class="profile-tab py-3 text-primary border-b-2 border-primary font-semibold transition-colors duration-200">Posts</button>
-                                <button onclick="SwitchProfileTab('saved')" class="profile-tab py-3 text-secondary hover:text-primary transition-colors duration-200">Saved</button>
-                                <button onclick="SwitchProfileTab('tagged')" class="profile-tab py-3 text-secondary hover:text-primary transition-colors duration-200">Tagged</button>
+                            <div class="flex justify-around w-full border-b border-white/10 mt-8">
+                                <button onclick="SwitchProfileTab('posts')" class="profile-tab py-3 text-primary border-b-2 border-primary font-semibold transition-colors duration-200 w-full">Posts</button>
+                                <button onclick="SwitchProfileTab('saved')" class="profile-tab py-3 text-secondary hover:text-primary transition-colors duration-200 w-full">Saved</button>
+                                <button onclick="SwitchProfileTab('tagged')" class="profile-tab py-3 text-secondary hover:text-primary transition-colors duration-200 w-full">Tagged</button>
                             </div>
 
                             <!-- Post Grid -->
-                            <div id="profile-posts-grid" class="grid grid-cols-3 gap-1 mt-4 w-full">
+                            <div id="profile-posts-grid" class="grid grid-cols-3 gap-1 mt-1 w-full">
                                 <!-- Dynamic Posts -->
                             </div>
                         </div>
@@ -240,7 +243,7 @@
                 </div>
                 <!-- Seetings -->
                 <div id="settingsView" class="view-content hidden">
-                    <div class="bg-surface p-6 rounded-xl shadow-md max-w-lg mx-auto transition-colors duration-300 border border-app">
+                    <div class="glass-panel p-6 rounded-2xl shadow-xl max-w-3xl mx-auto transition-colors duration-300">
                                 
                         <div class="flex items-center mb-6">
                             <button onclick="loadMyProfile()" class="mr-4 text-secondary hover:text-primary md:hidden">
@@ -321,7 +324,7 @@
                                 </div>
                             </div>
 
-                            <button id="logout-btn" onclick="handleLogout()" class="w-full p-4 mt-4 flex items-center justify-center text-red-500 bg-bg hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors font-medium border border-app">
+                            <button id="logout-btn" onclick="handleLogout()" class="w-full p-4 mt-4 flex items-center justify-center text-red-500 glass-button-secondary hover:bg-red-500/10 rounded-xl transition-colors font-medium border-red-500/20">
                                 <i data-lucide="log-out" class="w-5 h-5 mr-2"></i>
                                 Log Out
                             </button>
@@ -335,13 +338,14 @@
         </main>
 
         <!-- Floating Action Button (FAB) - Mobile Only -->
-        <button onclick="showModal('createPostModal')" id="fab-mobile" class="fab-mobile fixed bottom-20 right-4 md:hidden w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center z-40 hover:opacity-90 transition-opacity duration-200">
+        <!-- Floating Action Button (FAB) - Mobile Only -->
+        <button onclick="showModal('createPostModal')" id="fab-mobile" class="fab-mobile fixed bottom-24 right-4 md:hidden w-14 h-14 glass-button text-white rounded-full shadow-lg flex items-center justify-center z-40 hover:opacity-90 transition-opacity duration-200">
             <i data-lucide="plus" class="w-8 h-8"></i>
         </button>
 
 
         <!-- Fixed Bottom Navigation (Mobile Only) -->
-        <div id="mobile-nav" class="fixed bottom-0 left-0 right-0 bg-surface shadow-lg p-3 flex justify-around items-center md:hidden z-30 border-t border-app">
+        <div id="mobile-nav" class="fixed bottom-4 left-4 right-4 glass-panel shadow-2xl p-3 flex justify-around items-center md:hidden z-30 rounded-2xl backdrop-blur-2xl">
             <!-- Home -->
             <button onclick="changeView('feed')" class="mobile-nav-link text-secondary">
                 <i data-lucide="home" class="w-6 h-6"></i>
@@ -374,7 +378,7 @@
 
     <!-- Edit Profile Modal -->
     <div id="editProfileModal" class="modal-backdrop">
-        <div class="bg-surface rounded-xl shadow-xl w-full max-w-md m-auto transition-colors duration-300">
+        <div class="glass-panel rounded-2xl shadow-2xl w-full max-w-md m-auto transition-colors duration-300">
             
             <!-- Modal Header -->
             <div class="p-6 border-b border-app flex justify-between items-center">
@@ -396,12 +400,12 @@
 
                 <!-- Form Fields -->
                 <div class="space-y-4">
-                    <input type="text" id="edit-name" placeholder="Name" class="w-full p-3 border border-app rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-surface text-main" value="">
-                    <input type="text" id="edit-username" placeholder="Username" class="w-full p-3 border border-app rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-surface text-main" value="">
-                    <textarea id="edit-bio" placeholder="Bio" rows="3" class="w-full p-3 border border-app rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-surface text-main resize-none"></textarea>
+                    <input type="text" id="edit-name" placeholder="Name" class="w-full p-3 glass-input rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-main" value="">
+                    <input type="text" id="edit-username" placeholder="Username" class="w-full p-3 glass-input rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-main" value="">
+                    <textarea id="edit-bio" placeholder="Bio" rows="3" class="w-full p-3 glass-input rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-main resize-none"></textarea>
                     
                     <!-- Simple Select for Gender -->
-                    <select id="edit-gender" class="w-full p-3 border border-app rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-surface text-main">
+                    <select id="edit-gender" class="w-full p-3 glass-input rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-main">
                         <option value="" disabled selected>Gender</option>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
@@ -412,7 +416,7 @@
 
             <!-- Modal Footer -->
             <div class="p-6 pt-0">
-                <button onclick="saveProfile()" class="w-full py-3 bg-primary text-white font-semibold rounded-xl hover:opacity-90 transition-opacity duration-200">
+                <button onclick="saveProfile()" class="w-full py-3 glass-button text-white font-semibold rounded-xl hover:opacity-90 transition-opacity duration-200">
                     Save
                 </button>
             </div>
@@ -422,7 +426,7 @@
 
     <!-- Create Post Modal -->
     <div id="createPostModal" class="modal-backdrop">
-        <div class="bg-surface rounded-xl shadow-xl w-full max-w-md m-initial h-full transition-colors duration-300">
+        <div class="glass-panel rounded-2xl shadow-2xl w-full max-w-md m-initial h-full transition-colors duration-300">
             
             <!-- Modal Header -->
             <div class="p-6 border-b border-app flex justify-between items-center">
@@ -444,7 +448,7 @@
                 </div>
 
                 <!-- Text Area -->
-                <textarea placeholder="What's on your mind?" rows="4" class="w-full p-3 border-none resize-none text-lg focus:ring-0 focus:outline-none bg-surface text-main"></textarea>
+                <textarea placeholder="What's on your mind?" rows="4" class="w-full p-3 border-none resize-none text-lg focus:ring-0 focus:outline-none bg-transparent text-main placeholder-gray-400"></textarea>
                 
                 <!-- Media Preview -->
                 <div id="post-media-preview" class="grid grid-cols-2 gap-2 mb-4"></div>
@@ -463,7 +467,7 @@
 
             <!-- Modal Footer -->
             <div class="p-6 pt-0">
-                <button class="w-full py-3 bg-primary text-white font-semibold rounded-xl hover:opacity-90 transition-opacity duration-200">
+                <button class="w-full py-3 glass-button text-white font-semibold rounded-xl hover:opacity-90 transition-opacity duration-200">
                     Post
                 </button>
             </div>
@@ -474,7 +478,7 @@
 
     <!-- Edit Post Modal -->
     <div id="editPostModal" class="modal-backdrop">
-        <div class="bg-surface rounded-xl shadow-xl w-full max-w-md m-auto transition-colors duration-300 border border-app">
+        <div class="glass-panel rounded-2xl shadow-2xl w-full max-w-md m-auto transition-colors duration-300">
             
             <!-- Modal Header -->
             <div class="p-6 border-b border-app flex justify-between items-center">
@@ -487,7 +491,7 @@
             <!-- Modal Body -->
             <div class="p-6 space-y-4">
                 <input type="hidden" id="edit-post-id" value="">
-                <textarea id="edit-post-content" placeholder="What's on your mind?" rows="4" class="w-full p-3 border border-app rounded-lg resize-none text-base focus:ring-2 focus:ring-primary focus:border-primary bg-surface text-main"></textarea>
+                <textarea id="edit-post-content" placeholder="What's on your mind?" rows="4" class="w-full p-3 glass-input rounded-lg resize-none text-base focus:ring-2 focus:ring-primary focus:border-primary text-main"></textarea>
                 
                 <!-- Current Media Preview -->
                 <div id="edit-post-media-preview" class="grid-cols-2 gap-2 hidden"></div>
@@ -507,10 +511,10 @@
 
             <!-- Modal Footer -->
             <div class="p-6 pt-0 flex gap-3">
-                <button onclick="hideModal('editPostModal')" class="flex-1 py-3 border border-app text-main font-semibold rounded-xl hover:bg-hover-bg transition-colors duration-200">
+                <button onclick="hideModal('editPostModal')" class="flex-1 py-3 glass-button-secondary text-main font-semibold rounded-xl hover:bg-white/10 transition-colors duration-200">
                     Cancel
                 </button>
-                <button onclick="EditPost()" class="flex-1 py-3 bg-primary text-white font-semibold rounded-xl hover:opacity-90 transition-opacity duration-200">
+                <button onclick="EditPost()" class="flex-1 py-3 glass-button text-white font-semibold rounded-xl hover:opacity-90 transition-opacity duration-200">
                     Save Changes
                 </button>
             </div>
@@ -520,7 +524,7 @@
 
     <!-- Comments Modal -->
     <div id="commentsModal" class="modal-backdrop">
-        <div class="bg-surface rounded-t-2xl md:rounded-xl shadow-xl w-full md:max-w-2xl md:m-auto transition-colors duration-300 border border-app flex flex-col h-[85vh] md:h-[90vh] md:max-h-[800px] fixed bottom-0 left-0 right-0 md:static">
+        <div class="glass-panel rounded-t-2xl md:rounded-2xl shadow-2xl w-full md:max-w-2xl md:m-auto transition-colors duration-300 flex flex-col h-[85vh] md:h-[90vh] md:max-h-[800px] fixed bottom-0 left-0 right-0 md:static">
             <input type="hidden" id="comments-post-id" value="">
             <input type="hidden" id="comments-parent-id" value="">
             
@@ -538,18 +542,18 @@
             </div>
 
             <!-- Comment Input -->
-            <div class="p-4 border-t border-app shrink-0 bg-surface">
+            <div class="p-4 border-t border-white/10 shrink-0 glass-panel">
                 <!-- Reply Indicator -->
                 <div id="reply-indicator" class="hidden mb-2 px-2 py-1 bg-hover-bg rounded-lg items-center justify-between"></div>
                 
                 <div class="flex gap-2">
                     <div class="flex-1 relative">
-                        <input type="text" id="comment-input" placeholder="Write a comment..." class="w-full p-3 pr-10 border border-app rounded-xl bg-bg text-main focus:ring-2 focus:ring-primary focus:border-primary text-sm">
+                        <input type="text" id="comment-input" placeholder="Write a comment..." class="w-full p-3 pr-10 glass-input rounded-xl text-main focus:ring-2 focus:ring-primary focus:border-primary text-sm">
                         <button onclick="InsertMention()" class="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:text-primary">
                             <i data-lucide="at-sign" class="w-4 h-4"></i>
                         </button>
                     </div>
-                    <button onclick="SubmitComment()" class="px-4 py-2 bg-primary text-white font-semibold rounded-xl hover:opacity-90 transition-opacity text-sm">
+                    <button onclick="SubmitComment()" class="px-4 py-2 glass-button text-white font-semibold rounded-xl hover:opacity-90 transition-opacity text-sm">
                         Post
                     </button>
                 </div>
@@ -559,7 +563,7 @@
 
     <!-- Edit Comment Modal -->
     <div id="editCommentModal" class="modal-backdrop">
-        <div class="bg-surface rounded-xl shadow-xl w-full max-w-sm m-auto transition-colors duration-300 border border-app">
+        <div class="glass-panel rounded-2xl shadow-2xl w-full max-w-sm m-auto transition-colors duration-300">
             <input type="hidden" id="edit-comment-id" value="">
             
             <!-- Modal Header -->
@@ -572,7 +576,7 @@
             
             <!-- Modal Body -->
             <div class="p-4">
-                <textarea id="edit-comment-content" placeholder="Edit your comment..." rows="3" class="w-full p-3 border border-app rounded-lg resize-none text-sm focus:ring-2 focus:ring-primary focus:border-primary bg-surface text-main"></textarea>
+                <textarea id="edit-comment-content" placeholder="Edit your comment..." rows="3" class="w-full p-3 glass-input rounded-lg resize-none text-sm focus:ring-2 focus:ring-primary focus:border-primary text-main"></textarea>
             </div>
 
             <!-- Modal Footer -->
@@ -580,7 +584,7 @@
                 <button onclick="hideModal('editCommentModal')" class="flex-1 py-2 border border-app text-main font-medium rounded-xl hover:bg-hover-bg transition-colors text-sm">
                     Cancel
                 </button>
-                <button onclick="EditComment()" class="flex-1 py-2 bg-primary text-white font-medium rounded-xl hover:opacity-90 transition-opacity text-sm">
+                <button onclick="EditComment()" class="flex-1 py-2 glass-button text-white font-medium rounded-xl hover:opacity-90 transition-opacity text-sm">
                     Save
                 </button>
             </div>
@@ -589,14 +593,14 @@
 
     <!-- Auth Required Modal (Guest View) -->
     <div id="authModal" class="modal-backdrop z-50">
-        <div class="bg-surface rounded-xl shadow-xl w-full max-w-sm m-auto text-center p-8 transition-colors duration-300 border border-app relative">
+        <div class="glass-panel rounded-2xl shadow-2xl w-full max-w-sm m-auto text-center p-8 transition-colors duration-300 relative">
             <div class="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
                 <i data-lucide="lock" class="w-8 h-8"></i>
             </div>
             <h3 class="text-xl font-bold text-main mb-2">Login Required</h3>
             <p class="text-secondary mb-6">Join the community to follow users, like posts, and share your own.</p>
             
-            <a href="/auth/" class="block w-full py-3 bg-primary text-white font-semibold rounded-xl hover:opacity-90 transition-opacity duration-200 mb-3">
+            <a href="/auth/" class="block w-full py-3 glass-button text-white font-semibold rounded-xl hover:opacity-90 transition-opacity duration-200 mb-3">
                 Log In
             </a>
             <a href="/auth/?mode=signup" class="block w-full py-3 border border-app text-main font-semibold rounded-xl hover:bg-hover-bg transition-colors duration-200">

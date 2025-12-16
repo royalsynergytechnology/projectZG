@@ -34,22 +34,22 @@
     <div id="toast-container" class="toast-container fixed z-9999 flex gap-2.5 pointer-events-none w-auto left-5 right-5 bottom-5 flex-col justify-end md:top-20 md:right-5 md:left-auto md:bottom-auto md:w-[420px] md:flex-col"></div>
 
     <!-- VIEW 1: LOGIN / SIGNUP (Main Auth Container) -->
-    <div id="view-auth" class="auth-view active group hidden [&.active]:flex relative overflow-hidden w-full max-w-[768px] min-h-[480px] bg-white rounded-2xl shadow-2xl z-10 mx-auto my-auto mb-8 md:w-full md:max-w-full md:min-h-screen md:rounded-none md:shadow-none md:m-0">
+    <div id="view-auth" class="auth-view active group hidden [&.active]:flex relative overflow-hidden w-full max-w-[768px] min-h-[480px] glass-panel rounded-2xl shadow-2xl z-10 mx-auto my-auto mb-8 md:w-full md:max-w-full md:min-h-screen md:rounded-none md:shadow-none md:m-0 md:bg-transparent md:border-none md:backdrop-filter-none">
         
         <!-- Sign Up Form -->
         <div class="absolute top-0 h-full left-0 w-full opacity-0 z-0 transition-all duration-500 ease-in-out group-[.right-panel-active]:opacity-100 group-[.right-panel-active]:z-20 md:w-1/2 md:opacity-0 md:z-10 md:group-[.right-panel-active]:translate-x-full md:group-[.right-panel-active]:opacity-100 md:group-[.right-panel-active]:z-50 md:group-[.right-panel-active]:animate-show">
-            <form action="#" class="bg-white flex flex-col items-center justify-center h-full px-12 text-center text-gray-800">
+            <form action="#" class="bg-transparent flex flex-col items-center justify-center h-full px-12 text-center text-main">
                 <h1 class="font-bold text-3xl m-0">Create Account</h1>
                 <div class="flex my-5">
-                    <a href="#" id="signup-facebook" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" id="signup-google" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-google-plus-g"></i></a>
-                    <a href="#" id="signup-github" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-github"></i></a>
+                    <a href="#" id="signup-facebook" class="social glass-button-secondary rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-main hover:bg-white/20 transition"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" id="signup-google" class="social glass-button-secondary rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-main hover:bg-white/20 transition"><i class="fab fa-google-plus-g"></i></a>
+                    <a href="#" id="signup-github" class="social glass-button-secondary rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-main hover:bg-white/20 transition"><i class="fab fa-github"></i></a>
                 </div>
                 <span class="text-xs text-gray-500 mb-4">or use your email for registration</span>
-                <input type="text" id="signup-username" placeholder="Username" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" autocomplete="username" required minlength="3" maxlength="30" pattern="^[a-zA-Z0-9_]+$" title="Username can only contain letters, numbers, and underscores" />
-                <input type="email" id="signup-email" placeholder="Email" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" autocomplete="email" required />
-                <input type="password" id="signup-password" placeholder="Password" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" autocomplete="new-password" required minlength="8" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':&quot;\\|,.<>\/?]).{8,}$" title="Password must be at least 8 characters with lowercase, uppercase, number, and symbol" />
-                <button id="btn-signup" class="mt-4 rounded-full border border-primary bg-primary text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none hover:opacity-90">Sign Up</button>
+                <input type="text" id="signup-username" placeholder="Username" class="glass-input p-3 my-2 w-full outline-none rounded-lg text-main placeholder-secondary" autocomplete="username" required minlength="3" maxlength="30" pattern="^[a-zA-Z0-9_]+$" title="Username can only contain letters, numbers, and underscores" />
+                <input type="email" id="signup-email" placeholder="Email" class="glass-input p-3 my-2 w-full outline-none rounded-lg text-main placeholder-secondary" autocomplete="email" required />
+                <input type="password" id="signup-password" placeholder="Password" class="glass-input p-3 my-2 w-full outline-none rounded-lg text-main placeholder-secondary" autocomplete="new-password" required minlength="8" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':&quot;\\|,.<>\/?]).{8,}$" title="Password must be at least 8 characters with lowercase, uppercase, number, and symbol" />
+                <button id="btn-signup" class="mt-4 rounded-full glass-button text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none hover:opacity-90">Sign Up</button>
                 <div class="mt-4 md:hidden">
                     <p class="text-xs text-secondary">Already have an account? <a href="#" id="mobileSignIn" class="text-primary font-bold">Sign In</a></p>
                 </div>
@@ -58,18 +58,18 @@
 
         <!-- Sign In Form -->
         <div class="absolute top-0 h-full left-0 w-full opacity-100 z-20 transition-all duration-500 ease-in-out group-[.right-panel-active]:opacity-0 group-[.right-panel-active]:z-0 md:w-1/2 md:z-20 md:opacity-100 md:group-[.right-panel-active]:translate-x-full md:group-[.right-panel-active]:opacity-0 md:group-[.right-panel-active]:z-10">
-            <form action="#" class="bg-white flex flex-col items-center justify-center h-full px-12 text-center text-gray-800">
+            <form action="#" class="bg-transparent flex flex-col items-center justify-center h-full px-12 text-center text-main">
                 <h1 class="font-bold text-3xl m-0">Sign in</h1>
                 <div class="flex my-5">
-                    <a href="#" id="signin-facebook" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" id="signin-google" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-google-plus-g"></i></a>
-                    <a href="#" id="signin-github" class="social border border-gray-300 rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-gray-700 hover:bg-gray-100 transition"><i class="fab fa-github"></i></a>
+                    <a href="#" id="signin-facebook" class="social glass-button-secondary rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-main hover:bg-white/20 transition"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" id="signin-google" class="social glass-button-secondary rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-main hover:bg-white/20 transition"><i class="fab fa-google-plus-g"></i></a>
+                    <a href="#" id="signin-github" class="social glass-button-secondary rounded-full inline-flex justify-center items-center mx-1 h-10 w-10 text-main hover:bg-white/20 transition"><i class="fab fa-github"></i></a>
                 </div>
                 <span class="text-xs text-gray-500 mb-4">or use your account</span>
-                <input type="text" id="signin-identifier" placeholder="Email or Username" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" autocomplete="username email" required />
-                <input type="password" id="signin-password" placeholder="Password" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" autocomplete="current-password" required />
-                <a href="/auth/reset-password" id="forgot-password-link" class="text-gray-800 text-sm no-underline my-4 hover:underline">Forgot your password?</a>
-                <button id="btn-signin" class="mt-2 rounded-full border border-primary bg-primary text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none hover:opacity-90">Sign In</button>
+                <input type="text" id="signin-identifier" placeholder="Email or Username" class="glass-input p-3 my-2 w-full outline-none rounded-lg text-main placeholder-secondary" autocomplete="username email" required />
+                <input type="password" id="signin-password" placeholder="Password" class="glass-input p-3 my-2 w-full outline-none rounded-lg text-main placeholder-secondary" autocomplete="current-password" required />
+                <a href="/auth/reset-password" id="forgot-password-link" class="text-secondary text-sm no-underline my-4 hover:underline">Forgot your password?</a>
+                <button id="btn-signin" class="mt-2 rounded-full glass-button text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none hover:opacity-90">Sign In</button>
                 <div class="mt-4 md:hidden">
                     <p class="text-xs text-secondary">Don't have an account? <a href="#" id="mobileSignUp" class="text-primary font-bold">Sign Up</a></p>
                 </div>
@@ -95,7 +95,7 @@
 
     <!-- VIEW 2: VERIFY EMAIL -->
     <div id="view-verify-email" class="auth-view hidden [&.active]:flex flex-col items-center justify-center p-12 text-center relative z-10">
-        <div class="bg-white rounded-2xl shadow-2xl relative overflow-hidden w-full max-w-[500px] p-12 text-center">
+        <div class="glass-panel rounded-2xl shadow-2xl relative overflow-hidden w-full max-w-[500px] p-12 text-center">
             <div class="mb-6 text-primary text-6xl">
                 <i class="fas fa-envelope-open-text"></i>
             </div>
@@ -103,7 +103,7 @@
             <p class="text-sm text-gray-500 mb-8 max-w-md mx-auto">
                 We've sent a verification link to your email address. Please check your inbox and click the link to activate your account.
             </p>
-            <button id="btn-back-verify" class="rounded-full border border-primary bg-primary text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none hover:opacity-90">
+            <button id="btn-back-verify" class="rounded-full glass-button text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none hover:opacity-90">
                 Back to Sign In
             </button>
         </div>
@@ -111,14 +111,14 @@
 
     <!-- VIEW 3: RESET PASSWORD REQUEST -->
     <div id="view-reset-password" class="auth-view hidden [&.active]:flex flex-col items-center justify-center p-12 text-center relative z-10">
-        <div class="bg-white rounded-2xl shadow-2xl relative overflow-hidden w-full max-w-[500px] p-12 text-center">
+        <div class="glass-panel rounded-2xl shadow-2xl relative overflow-hidden w-full max-w-[500px] p-12 text-center">
             <form id="reset-request-form" class="flex flex-col items-center">
-                <h1 class="font-bold text-3xl mb-4 text-gray-800">Reset Password</h1>
-                <p class="text-xs text-gray-500 mb-6">Enter your email address and we'll send you a link to reset your password.</p>
+                <h1 class="font-bold text-3xl mb-4 text-main">Reset Password</h1>
+                <p class="text-xs text-secondary mb-6">Enter your email address and we'll send you a link to reset your password.</p>
                 
-                <input type="email" id="reset-email" placeholder="Email" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" required />
+                <input type="email" id="reset-email" placeholder="Email" class="glass-input p-3 my-2 w-full outline-none rounded-lg text-main placeholder-secondary" required />
                 
-                <button type="submit" id="btn-reset-request" class="mt-4 rounded-full border border-primary bg-primary text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none hover:opacity-90">
+                <button type="submit" id="btn-reset-request" class="mt-4 rounded-full glass-button text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none hover:opacity-90">
                     Send Reset Link
                 </button>
                 
@@ -131,15 +131,15 @@
 
     <!-- VIEW 3.5: UPDATE PASSWORD -->
     <div id="view-update-password" class="auth-view hidden [&.active]:flex flex-col items-center justify-center p-12 text-center relative z-10">
-        <div class="bg-white rounded-2xl shadow-2xl relative overflow-hidden w-full max-w-[500px] p-12 text-center">
+        <div class="glass-panel rounded-2xl shadow-2xl relative overflow-hidden w-full max-w-[500px] p-12 text-center">
             <form id="update-password-form" class="flex flex-col items-center">
-                <h1 class="font-bold text-3xl mb-4 text-gray-800">New Password</h1>
-                <p class="text-xs text-gray-500 mb-6">Enter your new password below.</p>
+                <h1 class="font-bold text-3xl mb-4 text-main">New Password</h1>
+                <p class="text-xs text-secondary mb-6">Enter your new password below.</p>
                 
-                <input type="password" id="new-password" placeholder="New Password" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" required />
-                <input type="password" id="confirm-password" placeholder="Confirm Password" class="bg-gray-100 border-none p-3 my-2 w-full outline-none rounded-lg" required />
+                <input type="password" id="new-password" placeholder="New Password" class="glass-input p-3 my-2 w-full outline-none rounded-lg text-main placeholder-secondary" required />
+                <input type="password" id="confirm-password" placeholder="Confirm Password" class="glass-input p-3 my-2 w-full outline-none rounded-lg text-main placeholder-secondary" required />
                 
-                <button type="submit" id="btn-update-password" class="mt-4 rounded-full border border-primary bg-primary text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none hover:opacity-90">
+                <button type="submit" id="btn-update-password" class="mt-4 rounded-full glass-button text-white text-xs font-bold py-3 px-12 tracking-wider uppercase transition-transform active:scale-95 focus:outline-none hover:opacity-90">
                     Update Password
                 </button>
             </form>
@@ -153,40 +153,40 @@
             <div class="absolute inset-0 bg-transparent z-0"></div> 
             
             <!-- Step 1: Username -->
-            <div class="swipe-card absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-10 bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl transform translate-x-full opacity-0 transition-all duration-500 ease-in-out [&.active]:translate-x-0 [&.active]:opacity-100" id="step-1">
+            <div class="swipe-card absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-10 glass-panel shadow-2xl rounded-3xl transform translate-x-full opacity-0 transition-all duration-500 ease-in-out [&.active]:translate-x-0 [&.active]:opacity-100" id="step-1">
                 <div class="flex gap-3 mb-8">
                     <div class="w-8 h-2.5 rounded-full bg-primary transition-all duration-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
                 </div>
-                <h2 class="text-2xl font-bold mb-2 text-gray-800">What should we call you?</h2>
-                <p class="text-gray-500 text-sm mb-8 text-center">Pick a unique username for your profile.</p>
+                <h2 class="text-2xl font-bold mb-2 text-main">What should we call you?</h2>
+                <p class="text-secondary text-sm mb-8 text-center">Pick a unique username for your profile.</p>
 
                 <div class="w-full mb-6">
                     <input type="text" id="ob-username" placeholder="@username" 
-                           class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl outline-none focus:border-primary transition-colors text-lg font-bold text-center text-gray-800" 
+                           class="w-full p-4 glass-input rounded-xl outline-none focus:border-primary transition-colors text-lg font-bold text-center text-main placeholder-secondary" 
                            autocomplete="off">
                 </div>
 
-                <button id="ob-next-1" class="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all transform active:scale-95">
+                <button id="ob-next-1" class="w-full py-4 glass-button text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all transform active:scale-95">
                     Continue <i class="fas fa-arrow-right ml-2 opacity-80"></i>
                 </button>
             </div>
 
             <!-- Step 2: Gender -->
-            <div class="swipe-card absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-10 bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl transform translate-x-full opacity-0 transition-all duration-500 ease-in-out [&.active]:translate-x-0 [&.active]:opacity-100" id="step-2">
+            <div class="swipe-card absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-10 glass-panel shadow-2xl rounded-3xl transform translate-x-full opacity-0 transition-all duration-500 ease-in-out [&.active]:translate-x-0 [&.active]:opacity-100" id="step-2">
                 <div class="flex gap-3 mb-8">
                     <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-8 h-2.5 rounded-full bg-primary transition-all duration-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
                 </div>
-                <h2 class="text-2xl font-bold mb-2 text-gray-800">How do you identify?</h2>
-                <p class="text-gray-500 text-sm mb-8">This helps us personalize your experience.</p>
+                <h2 class="text-2xl font-bold mb-2 text-main">How do you identify?</h2>
+                <p class="text-secondary text-sm mb-8">This helps us personalize your experience.</p>
                 
                 <div class="w-full flex-1 flex flex-col justify-center gap-3 mb-6">
-                     <button class="btn-option w-full p-4 border rounded-xl hover:bg-gray-100 flex justify-between items-center text-gray-700 font-medium" data-value="male">
+                     <button class="btn-option w-full p-4 glass-button-secondary rounded-xl hover:bg-white/10 flex justify-between items-center text-main font-medium" data-value="male">
                         <span>Male</span> <i class="fas fa-mars text-blue-500"></i>
                      </button>
-                     <button class="btn-option w-full p-4 border rounded-xl hover:bg-gray-100 flex justify-between items-center text-gray-700 font-medium" data-value="female">
+                     <button class="btn-option w-full p-4 glass-button-secondary rounded-xl hover:bg-white/10 flex justify-between items-center text-main font-medium" data-value="female">
                         <span>Female</span> <i class="fas fa-venus text-pink-500"></i>
                      </button>
-                     <button class="btn-option w-full p-4 border rounded-xl hover:bg-gray-100 flex justify-between items-center text-gray-700 font-medium" data-value="other">
+                     <button class="btn-option w-full p-4 glass-button-secondary rounded-xl hover:bg-white/10 flex justify-between items-center text-main font-medium" data-value="other">
                         <span>Other / Prefer not to say</span> <i class="fas fa-genderless text-purple-500"></i>
                      </button>
                      <input type="hidden" id="ob-gender">
@@ -194,44 +194,44 @@
             </div>
 
             <!-- Step 3: Avatar (Optional) -->
-            <div class="swipe-card absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-10 bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl transform translate-x-full opacity-0 transition-all duration-500 ease-in-out [&.active]:translate-x-0 [&.active]:opacity-100" id="step-3">
+            <div class="swipe-card absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-10 glass-panel shadow-2xl rounded-3xl transform translate-x-full opacity-0 transition-all duration-500 ease-in-out [&.active]:translate-x-0 [&.active]:opacity-100" id="step-3">
                 <div class="flex gap-3 mb-8">
                     <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-8 h-2.5 rounded-full bg-primary transition-all duration-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
                 </div>
-                <h2 class="text-2xl font-bold mb-2 text-gray-800">Show us your smile!</h2>
-                <p class="text-gray-500 text-sm mb-8">Upload a profile picture (Optional)</p>
+                <h2 class="text-2xl font-bold mb-2 text-main">Show us your smile!</h2>
+                <p class="text-secondary text-sm mb-8">Upload a profile picture (Optional)</p>
                 
                 <div class="relative group cursor-pointer mb-8" id="avatar-trigger">
-                    <div class="w-40 h-40 rounded-full overflow-hidden border-4 border-gray-100 bg-gray-50 shadow-md relative mx-auto">
+                    <div class="w-40 h-40 rounded-full overflow-hidden border-4 border-white/20 glass-panel shadow-md relative mx-auto">
                         <img id="avatar-preview" src="https://placehold.co/200/e2e8f0/94a3b8?text=+" class="w-full h-full object-cover">
                     </div>
                 </div>
                 <input type="file" id="avatar-input" accept="image/*" class="hidden">
 
-                <button id="ob-next-3" class="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-lg mb-3 hover:shadow-xl transition-all">
+                <button id="ob-next-3" class="w-full py-4 glass-button text-white rounded-xl font-bold shadow-lg mb-3 hover:shadow-xl transition-all">
                     Upload & Continue
                 </button>
-                <button id="ob-skip-3" class="w-full py-3 text-gray-500 font-semibold hover:text-primary transition-colors">
+                <button id="ob-skip-3" class="w-full py-3 text-secondary font-semibold hover:text-primary transition-colors">
                     Skip for now
                 </button>
             </div>
 
             <!-- Step 4: Password -->
-            <div class="swipe-card absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-10 bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl transform translate-x-full opacity-0 transition-all duration-500 ease-in-out [&.active]:translate-x-0 [&.active]:opacity-100" id="step-4">
+            <div class="swipe-card absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-10 glass-panel shadow-2xl rounded-3xl transform translate-x-full opacity-0 transition-all duration-500 ease-in-out [&.active]:translate-x-0 [&.active]:opacity-100" id="step-4">
                 <div class="flex gap-3 mb-8">
                     <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div><div class="w-8 h-2.5 rounded-full bg-primary transition-all duration-300"></div>
                 </div>
-                <h2 class="text-2xl font-bold mb-2 text-gray-800">Secure your account</h2>
-                <p class="text-gray-500 text-sm mb-6 text-center">Set a strong password to protect your account.</p>
+                <h2 class="text-2xl font-bold mb-2 text-main">Secure your account</h2>
+                <p class="text-secondary text-sm mb-6 text-center">Set a strong password to protect your account.</p>
 
                 <div class="w-full space-y-4 mb-8">
                     <input type="password" id="ob-password" placeholder="New Password" 
-                           class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl outline-none focus:border-primary transition-colors text-gray-800">
+                           class="w-full p-4 glass-input rounded-xl outline-none focus:border-primary transition-colors text-main placeholder-secondary">
                     <input type="password" id="ob-confirm-password" placeholder="Confirm Password" 
-                           class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl outline-none focus:border-primary transition-colors text-gray-800">
+                           class="w-full p-4 glass-input rounded-xl outline-none focus:border-primary transition-colors text-main placeholder-secondary">
                 </div>
 
-                <button id="ob-submit" class="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all transform active:scale-95">
+                <button id="ob-submit" class="w-full py-4 glass-button text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all transform active:scale-95">
                     Complete Setup
                 </button>
             </div>

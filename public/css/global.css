@@ -1,55 +1,192 @@
 @import "tailwindcss";
 
 /* -------------------------------------------------------------------------- */
-/* 1. CSS Variables for Theming (Light Mode Default) */
+/* 1. CSS Variables for Theming (Glassmorphism) */
 /* -------------------------------------------------------------------------- */
 :root {
     --color-primary-rgb: 94, 63, 226;
     /* Indigo-600 */
     --color-primary: rgb(var(--color-primary-rgb));
 
-    /* Light Mode */
-    --color-bg-rgb: 243, 244, 246;
-    /* gray-100 - Page background */
-    --color-surface-rgb: 255, 255, 255;
-    /* white - Card/Sidebar background */
+    /* Glassmorphism Core */
+    --glass-bg: rgba(255, 255, 255, 0.15);
+    /* Slightly more opaque for visibility */
+    --glass-border: rgba(255, 255, 255, 0.3);
+    --glass-blur: 16px;
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+
+    /* Text Colors */
     --color-text-main-rgb: 31, 41, 55;
     /* gray-800 */
-    --color-text-secondary-rgb: 107, 114, 128;
-    /* gray-500 */
-    --color-border-rgb: 229, 231, 235;
-    /* gray-200 */
-    --color-hover-bg-rgb: 238, 242, 255;
-    /* indigo-50 */
-    --color-placeholder-bg-rgb: 229, 231, 235;
-    /* gray-200 */
+    --color-text-secondary-rgb: 75, 85, 99;
+    /* gray-600 - Darker for contrast on glass */
+    --color-hover-bg-rgb: 255, 255, 255;
+    /* white */
+    --color-hover-opacity: 0.3;
+
+    /* Status */
     --color-liked-rgb: 239, 68, 68;
     /* red-500 */
+
+    /* Global Background Gradients (Fixed in background) */
+    --bg-gradient-1: #ff9a9e;
+    --bg-gradient-2: #fad0c4;
+    --bg-gradient-3: #a18cd1;
+    --bg-gradient-4: #fbc2eb;
 }
 
 /* -------------------------------------------------------------------------- */
 /* 2. Dark Mode Overrides */
 /* -------------------------------------------------------------------------- */
 [data-theme="dark"] {
-    --color-bg-rgb: 18, 18, 18;
-    --color-surface-rgb: 31, 41, 55;
-    --color-text-main-rgb: 229, 231, 235;
-    --color-text-secondary-rgb: 156, 163, 175;
-    --color-border-rgb: 55, 65, 81;
-    --color-hover-bg-rgb: 55, 65, 81;
-    --color-placeholder-bg-rgb: 55, 65, 81;
+    /* Glassmorphism Dark Core */
+    --glass-bg: rgba(0, 0, 0, 0.3);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    /* More subtle in dark mode */
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+
+    --color-text-main-rgb: 243, 244, 246;
+    /* gray-100 */
+    --color-text-secondary-rgb: 209, 213, 219;
+    /* gray-300 */
+    --color-hover-bg-rgb: 255, 255, 255;
+    --color-hover-opacity: 0.1;
+
     --color-liked-rgb: 252, 165, 165;
+    /* red-300 */
+
+    /* Dark Mode Gradients */
+    --bg-gradient-1: #2d3436;
+    --bg-gradient-2: #000000;
+    --bg-gradient-3: #434343;
+    --bg-gradient-4: #000000;
 }
 
-/* Applying Variables to Tailwind Classes */
-.bg-bg {
-    background-color: rgb(var(--color-bg-rgb));
+/* -------------------------------------------------------------------------- */
+/* 3. Base Styles & Background */
+/* -------------------------------------------------------------------------- */
+body {
+    background:
+        radial-gradient(circle at 10% 20%, var(--bg-gradient-1) 0%, transparent 50%),
+        radial-gradient(circle at 90% 10%, var(--bg-gradient-3) 0%, transparent 50%),
+        radial-gradient(circle at 50% 90%, var(--bg-gradient-4) 0%, transparent 50%),
+        linear-gradient(135deg, var(--bg-gradient-2) 0%, var(--bg-gradient-3) 100%);
+    background-attachment: fixed;
+    background-size: 200% 200%;
+    animation: gradientMove 15s ease infinite;
+    min-height: 100vh;
+    color: rgb(var(--color-text-main-rgb));
+    transition: color 0.3s ease;
 }
+
+@keyframes gradientMove {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+/* 4. Glass Utilities */
+/* -------------------------------------------------------------------------- */
+
+/* The main glass panel class to replace cards */
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    border-radius: 16px;
+    /* Soft rounding */
+    color: rgb(var(--color-text-main-rgb));
+}
+
+/* For inputs */
+.glass-input {
+    background: rgba(255, 255, 255, 0.1);
+    /* Even clearer */
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(4px);
+    color: rgb(var(--color-text-main-rgb));
+    transition: all 0.3s ease;
+}
+
+.glass-input:focus {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(var(--color-primary-rgb), 0.5);
+    box-shadow: 0 0 15px rgba(var(--color-primary-rgb), 0.2);
+    outline: none;
+}
+
+/* For buttons */
+.glass-button {
+    background: rgba(var(--color-primary-rgb), 0.8);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    box-shadow: 0 4px 15px rgba(var(--color-primary-rgb), 0.3);
+    transition: all 0.3s ease;
+}
+
+.glass-button:hover {
+    background: rgba(var(--color-primary-rgb), 0.95);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(var(--color-primary-rgb), 0.4);
+}
+
+.glass-button-secondary {
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    color: rgb(var(--color-text-main-rgb));
+    transition: all 0.2s ease;
+}
+
+.glass-button-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--color-primary);
+}
+
+/* -------------------------------------------------------------------------- */
+/* 5. Legacy Class Mapping (Adapters) */
+/* -------------------------------------------------------------------------- */
+/* These classes map the old semantic names to the new glass look */
 
 .bg-surface {
-    background-color: rgb(var(--color-surface-rgb));
+    /* Originally white card bg -> Now Glass Panel */
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
 }
 
+.bg-bg {
+    /* Originally gray page bg -> Transparent to show global gradient */
+    background-color: transparent !important;
+}
+
+.border-app {
+    border-color: var(--glass-border) !important;
+}
+
+.bg-hover-bg {
+    background-color: rgba(var(--color-hover-bg-rgb), var(--color-hover-opacity));
+}
+
+.bg-placeholder-bg {
+    background-color: rgba(0, 0, 0, 0.05);
+    /* Subtle dim for skeletons */
+}
+
+/* Text adjustments */
 .text-main {
     color: rgb(var(--color-text-main-rgb));
 }
@@ -58,23 +195,6 @@
     color: rgb(var(--color-text-secondary-rgb));
 }
 
-.bg-hover-bg {
-    background-color: rgb(var(--color-hover-bg-rgb));
-}
-
-.border-app {
-    border-color: rgb(var(--color-border-rgb));
-}
-
-.bg-placeholder-bg {
-    background-color: rgb(var(--color-placeholder-bg-rgb));
-}
-
-.bg-liked {
-    background-color: rgb(var(--color-liked-rgb));
-}
-
-/* Custom Colors for Primary/Accent */
 .text-primary {
     color: var(--color-primary);
 }
@@ -91,42 +211,31 @@
     fill: var(--color-primary);
 }
 
-/* Custom Styles for Interactive Elements */
 .liked-active {
     color: rgb(var(--color-liked-rgb)) !important;
     fill: rgb(var(--color-liked-rgb)) !important;
-}
-
-/* Modal Backdrop */
-.modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 50;
-    display: none;
-    /* Use grid for perfect centering */
-    place-items: center;
-    padding: 1rem;
-    overflow-y: auto;
-}
-
-.modal-backdrop.active {
-    display: grid;
+    filter: drop-shadow(0 0 8px rgba(var(--color-liked-rgb), 0.5));
+    /* Glowing heart */
 }
 
 /* -------------------------------------------------------------------------- */
-/* 3. Custom Modal Transition (Mobile Slide Up) */
+/* 6. Animations & Modals */
 /* -------------------------------------------------------------------------- */
+
+/* Modal Backdrop - Frosted */
 .modal-backdrop {
-    /* Ensures proper centering regardless of screen size */
     display: none;
     position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.3);
+    /* Darker dim */
+    backdrop-filter: blur(8px);
+    /* Blur the content behind modal */
     z-index: 50;
-    overflow-y: auto;
     align-items: center;
     justify-content: center;
+    padding: 1rem;
+    overflow-y: auto;
 }
 
 .modal-backdrop.active {
@@ -134,150 +243,112 @@
 }
 
 .modal-container {
-    /* Desktop/Default appearance */
-    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+    background: var(--glass-bg);
+    /* Ensure modal itself is glass */
+    backdrop-filter: blur(20px) saturate(180%);
+    /* Stronger blur for modal */
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    border-radius: 24px;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+    transform: scale(0.95);
+    opacity: 0;
+}
+
+.modal-backdrop.active .modal-container {
     transform: scale(1);
     opacity: 1;
 }
 
-/* Mobile Slide-up Animation for Create Post Modal (FAB click) */
+/* Mobile Slide-up Override */
 @media (max-width: 767px) {
     #createPostModal.modal-backdrop.active .modal-container {
-        /* Start off-screen */
         transform: translateY(100%);
         opacity: 0;
     }
 
     #createPostModal.modal-backdrop.active.mobile-launch .modal-container {
-        /* Slide up to final position */
         transform: translateY(0);
         opacity: 1;
+        border-radius: 24px 24px 0 0;
+        /* Sheet look */
     }
 }
 
-/* -------------------------------------------------------------------------- */
-/* 4. FAB Rotation Animation */
-/* -------------------------------------------------------------------------- */
-#fab-mobile .lucide {
-    transition: transform 0.3s ease-out;
-    /* Smooth transition for the icon itself */
-}
-
-#fab-mobile.rotate-active .lucide {
-    transform: rotate(45deg);
-    /* Rotate 45 degrees when active */
-}
-
-/* -------------------------------------------------------------------------- */
-/* 5. Auth Animations */
-/* -------------------------------------------------------------------------- */
-@keyframes show {
-
-    0%,
-    49.99% {
-        opacity: 0;
-        z-index: 1;
-    }
-
-    50%,
-    100% {
-        opacity: 1;
-        z-index: 5;
-    }
-}
-
-.animate-show {
-    animation: show 0.8s;
-}
-
-/* -------------------------------------------------------------------------- */
-/* 6. Toast Animations */
-/* -------------------------------------------------------------------------- */
+/* Toast Animations */
 @keyframes toastSlideIn {
     0% {
-        transform: translateX(120%);
+        transform: translateX(120%) scale(0.8);
         opacity: 0;
     }
 
     100% {
-        transform: translateX(0);
+        transform: translateX(0) scale(1);
         opacity: 1;
     }
 }
 
 @keyframes toastSlideOut {
     0% {
-        transform: translateX(0);
+        transform: translateX(0) scale(1);
         opacity: 1;
     }
 
     100% {
-        transform: translateX(120%);
+        transform: translateX(120%) scale(0.8);
         opacity: 0;
     }
 }
 
-@keyframes toastProgress {
-    0% {
-        width: 100%;
-    }
-
-    100% {
-        width: 0%;
-    }
+.toast-container .toast {
+    /* Glass toasts */
+    background: rgba(255, 255, 255, 0.7) !important;
+    /* Lighter for readability */
+    backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    color: #333 !important;
+    border-radius: 12px !important;
 }
 
-.toast-enter {
-    animation: toastSlideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+[data-theme="dark"] .toast-container .toast {
+    background: rgba(30, 30, 30, 0.8) !important;
+    color: #fff !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-.toast-exit {
-    animation: toastSlideOut 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+/* Global Transitions */
+/* Optimized: targeted transitions instead of wildcard */
+body,
+a,
+button,
+input,
+textarea,
+.glass-panel,
+.glass-button,
+.glass-input {
+    transition-property: background-color, border-color, color, fill, opacity, box-shadow, transform, backdrop-filter;
+    transition-duration: 200ms;
+    transition-timing-function: ease-out;
 }
 
-@media (max-width: 768px) {
-    @keyframes toastSlideInMobile {
-        0% {
-            transform: translateY(120%);
-            opacity: 0;
-        }
-
-        100% {
-            transform: translateY(0);
-            opacity: 1;
-        }
-    }
-
-    @keyframes toastSlideOutMobile {
-        0% {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        100% {
-            transform: translateY(120%);
-            opacity: 0;
-        }
-    }
-
-    .toast-enter {
-        animation: toastSlideInMobile 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
-    }
-
-    .toast-exit {
-        animation: toastSlideOutMobile 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
-    }
+/* Scrollbar Polish */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
 }
 
-/* Ensure transitions are smooth */
-* {
-    transition-property:
-        background-color,
-        border-color,
-        color,
-        fill,
-        opacity,
-        box-shadow,
-        transform;
-    transition-duration: 300ms;
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.5);
+    /* gray-400/50 */
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(107, 114, 128, 0.8);
+    /* gray-500/80 */
 }

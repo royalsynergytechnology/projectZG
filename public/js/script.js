@@ -541,7 +541,7 @@ function CreateReplyHTML(reply) {
             <button onclick="ToggleCommentMenu(event, '${reply.id}')" class="text-secondary hover:text-main p-1 rounded-full hover:bg-hover-bg transition-colors">
                 <i data-lucide="more-horizontal" class="w-3 h-3"></i>
             </button>
-            <div id="comment-menu-${reply.id}" class="hidden absolute right-0 top-5 bg-surface border border-app rounded-lg shadow-lg py-1 z-50 min-w-24">
+            <div id="comment-menu-${reply.id}" class="hidden absolute right-0 top-5 glass-panel border border-white/10 rounded-lg shadow-lg py-1 z-50 min-w-24">
                 <button onclick="OpenEditCommentModal('${reply.id}', \`${encodeURIComponent(reply.content || '')}\`)" class="w-full px-3 py-1 text-left text-xs text-main hover:bg-hover-bg flex items-center gap-2">
                     <i data-lucide="pencil" class="w-3 h-3"></i> Edit
                 </button>
@@ -583,7 +583,7 @@ function CreateCommentHTML(comment) {
             <button onclick="ToggleCommentMenu(event, '${comment.id}')" class="text-secondary hover:text-main p-1 rounded-full hover:bg-hover-bg transition-colors">
                 <i data-lucide="more-horizontal" class="w-4 h-4"></i>
             </button>
-            <div id="comment-menu-${comment.id}" class="hidden absolute right-0 top-6 bg-surface border border-app rounded-lg shadow-lg py-1 z-50 min-w-28">
+            <div id="comment-menu-${comment.id}" class="hidden absolute right-0 top-6 glass-panel border border-white/10 rounded-lg shadow-lg py-1 z-50 min-w-28">
                 <button onclick="OpenEditCommentModal('${comment.id}', \`${encodeURIComponent(comment.content || '')}\`)" class="w-full px-3 py-1.5 text-left text-xs text-main hover:bg-hover-bg flex items-center gap-2">
                     <i data-lucide="pencil" class="w-3 h-3"></i> Edit
                 </button>
@@ -958,7 +958,7 @@ function createPostHTML(post) {
             <button onclick="TogglePostMenu(event, '${post.id}')" class="ml-auto text-secondary hover:text-main p-1 rounded-full hover:bg-hover-bg transition-colors">
                 <i data-lucide="more-horizontal" class="w-5 h-5"></i>
             </button>
-            <div id="post-menu-${post.id}" class="hidden absolute right-0 top-8 bg-surface border border-app rounded-lg shadow-lg py-1 z-50 min-w-32">
+            <div id="post-menu-${post.id}" class="hidden absolute right-0 top-8 glass-panel border border-white/10 rounded-lg shadow-lg py-1 z-50 min-w-32">
                 <button onclick="OpenEditPostModal('${post.id}', \`${encodeURIComponent(post.content_text || '')}\`, \`${encodeURIComponent(JSON.stringify(post.media_urls || []))}\`)" class="w-full px-4 py-2 text-left text-sm text-main hover:bg-hover-bg flex items-center gap-2">
                     <i data-lucide="pencil" class="w-4 h-4"></i> Edit
                 </button>
@@ -974,7 +974,7 @@ function createPostHTML(post) {
     `;
 
     return `
-        <div class="bg-surface p-4 rounded-xl shadow-sm border border-app animate-fade-in" data-post-id="${post.id}">
+        <div class="py-4 animate-fade-in border-b border-white/10" data-post-id="${post.id}">
             <div class="flex items-center mb-3">
                 <img src="${post.author.avatar_url || 'https://placehold.co/40x40'}" class="w-10 h-10 rounded-full mr-3 object-cover cursor-pointer hover:opacity-80" alt="Avatar" onclick="loadPublicProfile('${post.author.username}')">
                 <div>
@@ -987,16 +987,18 @@ function createPostHTML(post) {
             <p class="text-main mb-3 whitespace-pre-wrap post-content">${highlightedContent}</p>
             
             ${post.media_urls && post.media_urls.length > 0 ? `
-            <div class="mb-4 rounded-lg overflow-hidden border border-app grid gap-1 ${post.media_urls.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}">
-                ${post.media_urls.map(url => {
-        const isVideo = url.match(/\.(mp4|webm|ogg|mov|quicktime)$/i);
-        return isVideo
-            ? `<video src="${url}" class="w-full h-full object-cover max-h-96" controls preload="metadata"></video>`
-            : `<img src="${url}" class="w-full object-cover max-h-96" alt="Post Media">`;
+            <div class="mb-3 rounded-xl overflow-hidden border border-white/5 relative bg-black/50">
+                 ${post.media_urls.map(url => {
+        // Basic check for video extension
+        const isVideo = url.match(/\.(mp4|webm|ogg|mov)$/i);
+        if (isVideo) {
+            return `<video src="${url}" controls class="w-full max-h-[500px] object-contain"></video>`;
+        }
+        return `<img src="${url}" class="w-full max-h-[500px] object-contain" alt="Post media">`;
     }).join('')}
             </div>` : ''}
 
-            <div class="flex items-center justify-between pt-3 border-t border-app">
+            <div class="flex items-center justify-between pt-3">
                 <div class="flex space-x-6">
                     <button onclick="toggleLike(this, '${post.id}')" class="flex items-center space-x-2 text-secondary hover:text-red-500 transition-colors ${isLiked} group">
                         <i data-lucide="heart" class="w-5 h-5 transition-transform group-active:scale-125" fill="${likeFill}"></i>
@@ -1020,6 +1022,14 @@ function createPostHTML(post) {
             </div>
         </div>
     `;
+
+    // Logic to inject recommended users after specifically the 4th post (index 3 or 4)
+    // We can't do this easily inside the map unless we pass index. 
+    // Instead we will modify createPostHTML to NOT handle this, and handle injection in renderFeed loop.
+    // BUT the existing code uses posts.map(...).join('').
+    // We need to modify renderFeed instead.
+
+    return postHtml;
 }
 // Feed filter state: 'all' or 'following'
 let currentFeedFilter = 'following';
@@ -1057,7 +1067,7 @@ async function fetchFeed(filter = null) {
                     ? 'No posts from people you follow yet. Follow more users or switch to All!'
                     : 'No posts yet. Be the first to post!';
                 feedContainer.innerHTML = `
-                    <div class="text-center py-10 text-secondary bg-surface rounded-xl border border-app">
+                    <div class="text-center py-10 text-secondary glass-panel rounded-xl border border-white/10">
                         <i data-lucide="newspaper" class="w-12 h-12 mx-auto mb-3 opacity-20"></i>
                         <p>${emptyMsg}</p>
                     </div>`;
@@ -1070,18 +1080,47 @@ async function fetchFeed(filter = null) {
 }
 
 // Switch feed filter (Following/All) - called from HTML
+// Switch feed filter (Following/All) - called from HTML
 window.SwitchFeedFilter = (filter) => {
     currentFeedFilter = filter;
+
+    // Sliding Pill Logic
+    const indicator = document.getElementById('feed-tab-indicator');
+    if (indicator) {
+        if (filter === 'following') {
+            indicator.style.transform = 'translateX(0)';
+        } else {
+            // Move fully to the right. Since width is calc(50%-4px) and left is 1 (4px),
+            // translateX(100%) moves it by its own width. 
+            // The gap is small. 100% + some gap?
+            // Actually, in the HTML: w-[calc(50%-4px)]. 
+            // If we move 100%, we move 50% - 4px.
+            // We want to reach the other side.
+            // Total width ~ 100%. One button is ~50%.
+            // translateX(100%) plus margin adjustment. 
+            // Let's try roughly 104% or just 100% and rely on visual.
+            indicator.style.transform = 'translateX(calc(100% + 8px))';
+        }
+    }
 
     // Update tab styles
     const tabs = document.querySelectorAll('#feedView .space-x-4 button');
     tabs.forEach(tab => {
-        const isActive = tab.textContent.toLowerCase().includes(filter === 'following' ? 'follow' : 'all');
-        tab.classList.toggle('text-primary', isActive);
-        tab.classList.toggle('border-b-2', isActive);
-        tab.classList.toggle('border-primary', isActive);
-        tab.classList.toggle('font-semibold', isActive);
-        tab.classList.toggle('text-secondary', !isActive);
+        // Check which button this is based on ID or text
+        const isFollowingBtn = tab.id === 'tab-following';
+        const isAllBtn = tab.id === 'tab-all';
+
+        let isActive = false;
+        if (filter === 'following' && isFollowingBtn) isActive = true;
+        if (filter === 'all' && isAllBtn) isActive = true;
+
+        if (isActive) {
+            tab.classList.add('text-white', 'font-bold');
+            tab.classList.remove('text-secondary', 'font-medium');
+        } else {
+            tab.classList.remove('text-white', 'font-bold');
+            tab.classList.add('text-secondary', 'font-medium');
+        }
     });
 
     fetchFeed(filter);
@@ -1099,12 +1138,44 @@ window.SwitchProfileTab = async (tab) => {
     tabs.forEach(t => {
         const tabText = t.textContent.toLowerCase().trim();
         const isActive = tabText === tab;
-        t.classList.toggle('text-primary', isActive);
-        t.classList.toggle('border-b-2', isActive);
-        t.classList.toggle('border-primary', isActive);
-        t.classList.toggle('font-semibold', isActive);
-        t.classList.toggle('text-secondary', !isActive);
+
+        // Sliding Pill Logic
+        if (isActive) {
+            const indicator = document.getElementById('feed-tab-indicator');
+            if (indicator) {
+                // Determine position based on which tab is active (assuming specific IDs or order)
+                // Since we rely on tab text matching, we can check if it's 'following' or 'all'
+                if (tab === 'following') {
+                    indicator.style.transform = 'translateX(0)';
+                } else {
+                    indicator.style.transform = 'translateX(100%)';
+                }
+            }
+
+            t.classList.add('text-white');
+            t.classList.remove('text-secondary');
+            t.classList.add('font-bold');
+        } else {
+            t.classList.remove('text-white');
+            t.classList.add('text-secondary');
+            t.classList.remove('font-bold');
+        }
     });
+
+    // Helper for sliding pill position (specific to our HTML structure)
+    const indicator = document.getElementById('feed-tab-indicator');
+    if (indicator) {
+        if (tab === 'following') {
+            indicator.style.left = '4px';
+            indicator.style.width = 'calc(50% - 4px)'; // roughly
+            indicator.style.transform = 'translateX(0)';
+        } else {
+            // Move to right
+            indicator.style.left = '50%'; // start at middle
+            indicator.style.width = 'calc(50% - 4px)';
+            indicator.style.transform = 'translateX(0)'; // or just use left
+        }
+    }
 
     if (!grid) {
 
@@ -1158,7 +1229,7 @@ window.SwitchProfileTab = async (tab) => {
                     }
                 } else {
                     el.innerHTML = `
-                        <div class="h-full w-full p-2 flex items-center justify-center bg-surface border border-app">
+                        <div class="h-full w-full p-2 flex items-center justify-center glass-panel border border-white/10">
                             <p class="text-[0.6rem] text-secondary line-clamp-4 text-center">${post.content_text || ''}</p>
                         </div>`;
                 }
@@ -1503,17 +1574,17 @@ async function toggleFollow(btn, userId) {
     const originalText = btn.innerText;
 
     // Optimistic UI
-    const isFollowing = btn.classList.contains('bg-surface'); // Currently following (has border/surface)
+    const isFollowing = btn.classList.contains('glass-button-secondary'); // Currently following (has border/surface)
     if (isFollowing) {
         // Unfollow
         btn.innerText = 'Follow';
-        btn.classList.remove('bg-surface', 'border', 'border-app', 'text-main');
-        btn.classList.add('bg-primary', 'text-white');
+        btn.classList.remove('glass-button-secondary', 'text-main');
+        btn.classList.add('glass-button', 'text-white');
     } else {
         // Follow
         btn.innerText = 'Following';
-        btn.classList.remove('bg-primary', 'text-white');
-        btn.classList.add('bg-surface', 'border', 'border-app', 'text-main');
+        btn.classList.remove('glass-button', 'text-white');
+        btn.classList.add('glass-button-secondary', 'text-main');
     }
 
     try {
@@ -1537,11 +1608,13 @@ async function toggleFollow(btn, userId) {
         // Revert
         btn.innerText = originalText;
         if (isFollowing) {
-            btn.classList.add('bg-surface', 'border', 'border-app', 'text-main');
-            btn.classList.remove('bg-primary', 'text-white');
+            btn.classList.add('glass-button-secondary', 'text-main');
+            btn.classList.remove('glass-button', 'text-white');
+            btn.innerText = 'Following';
         } else {
-            btn.classList.add('bg-primary', 'text-white');
-            btn.classList.remove('bg-surface', 'border', 'border-app', 'text-main');
+            btn.classList.remove('glass-button-secondary', 'text-main');
+            btn.classList.add('glass-button', 'text-white');
+            btn.innerText = 'Follow';
         }
     } finally {
         btn.disabled = false;
@@ -1611,11 +1684,11 @@ async function renderProfileView(profile, isOwnProfile) {
     if (actionsContainer) {
         if (isOwnProfile) {
             actionsContainer.innerHTML = `
-                <button onclick="showModal('editProfileModal')" class="flex-1 py-3 bg-primary text-white font-semibold rounded-xl hover:opacity-90 transition-opacity duration-200">
+                <button onclick="showModal('editProfileModal')" class="flex-1 py-2 glass-button text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity duration-200">
                     Edit Profile
                 </button>
-                <button onclick="shareProfile('${profile.username}')" class="py-3 px-6 border border-app text-main font-semibold rounded-xl hover:bg-hover-bg transition-colors duration-200">
-                    Share
+                <button onclick="shareProfile('${profile.username}')" class="p-2 glass-button-secondary text-main rounded-lg hover:bg-white/10 transition-colors duration-200" title="Share">
+                    <i data-lucide="share-2" class="w-5 h-5"></i>
                 </button>
             `;
 
@@ -1639,17 +1712,17 @@ async function renderProfileView(profile, isOwnProfile) {
             // Public View Actions
             const isFollowing = profile.is_following;
             const followBtnClass = isFollowing
-                ? 'bg-surface border border-app text-main'
-                : 'bg-primary text-white';
+                ? 'glass-button-secondary text-main'
+                : 'glass-button text-white';
             const followBtnText = isFollowing ? 'Following' : 'Follow';
 
             // Check if Guest
             if (!currentUser) {
                 actionsContainer.innerHTML = `
-                    <button onclick="showModal('authModal')" class="flex-1 py-3 bg-primary text-white font-semibold rounded-xl hover:opacity-90 transition-all duration-200">
+                    <button onclick="showModal('authModal')" class="flex-1 py-3 glass-button text-white font-semibold rounded-xl hover:opacity-90 transition-all duration-200">
                         Follow
                     </button>
-                    <button onclick="showModal('authModal')" class="py-3 px-6 border border-app text-main font-semibold rounded-xl hover:bg-hover-bg transition-colors duration-200">
+                    <button onclick="showModal('authModal')" class="py-3 px-6 glass-button-secondary text-main font-semibold rounded-xl hover:bg-white/10 transition-colors duration-200">
                         Message
                     </button>
                 `;
@@ -1658,7 +1731,7 @@ async function renderProfileView(profile, isOwnProfile) {
                     <button onclick="toggleFollow(this, '${profile.id}')" class="flex-1 py-3 font-semibold rounded-xl hover:opacity-90 transition-all duration-200 ${followBtnClass}">
                         ${followBtnText}
                     </button>
-                    <button class="py-3 px-6 border border-app text-main font-semibold rounded-xl hover:bg-hover-bg transition-colors duration-200">
+                    <button class="py-3 px-6 glass-button-secondary text-main font-semibold rounded-xl hover:bg-white/10 transition-colors duration-200">
                         Message
                     </button>
                 `;
@@ -1699,7 +1772,7 @@ async function renderProfileView(profile, isOwnProfile) {
                         }
                     } else {
                         el.innerHTML = `
-                            <div class="h-full w-full p-2 flex items-center justify-center bg-surface border border-app">
+                            <div class="h-full w-full p-2 flex items-center justify-center glass-panel border border-white/10">
                                 <p class="text-[0.6rem] text-secondary line-clamp-4 text-center">${post.content_text || ''}</p>
                             </div>`;
                     }
@@ -1852,8 +1925,89 @@ function updateNavStyles(viewId) {
         setTimeout(() => {
             const searchInput = document.getElementById('search-input');
             if (searchInput) searchInput.focus();
+            loadTrendingPosts(); // Fetch trending when opening search
         }, 100);
     }
+}
+
+// --- Trending & Discover Logic ---
+
+async function loadTrendingPosts() {
+    const grid = document.getElementById('trending-grid');
+    if (!grid) return;
+
+    // Mock Data for Trending
+    // In a real app, this would be `POST /posts/trending`
+    // We'll reuse existing post fetching but randomization or specific IDs for demo
+    try {
+        const res = await fetch(`${API_URL}/posts/feed`, { headers: getHeaders(), credentials: 'include' });
+        if (res.ok) {
+            const { posts } = await res.json();
+            // Simulate sorting by likes (mock)
+            const trending = posts.sort((a, b) => (b.likes_count || 0) - (a.likes_count || 0)).slice(0, 9);
+
+            grid.innerHTML = trending.map(post => {
+                const img = (post.media_urls && post.media_urls.length > 0) ? post.media_urls[0] : null;
+                if (!img) return ''; // Only show media posts in grid
+
+                // Helper to check video
+                const isVideo = img.match(/\.(mp4|webm|ogg|mov)$/i);
+                const mediaHtml = isVideo
+                    ? `<video src="${img}" class="w-full h-full object-cover"></video>`
+                    : `<img src="${img}" class="w-full h-full object-cover">`;
+
+                return `
+                    <div class="aspect-square relative cursor-pointer group overflow-hidden rounded-lg bg-placeholder-bg" onclick="OpenCommentsModal('${post.id}')">
+                        ${mediaHtml}
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-4 text-white font-bold">
+                            <span class="flex items-center"><i data-lucide="heart" class="w-5 h-5 mr-1 fill-white"></i> ${post.likes_count || 0}</span>
+                            <span class="flex items-center"><i data-lucide="message-circle" class="w-5 h-5 mr-1 fill-white"></i> ${post.comments_count || 0}</span>
+                        </div>
+                    </div>
+                `
+            }).join('');
+
+            lucide.createIcons();
+        }
+    } catch (e) {
+        console.error("Trending fetch error", e);
+        grid.innerHTML = '<div class="col-span-full text-center text-secondary py-10">Failed to load trending</div>';
+    }
+}
+
+function getRecommendedUsers() {
+    // Mock recommended users
+    return [
+        { username: 'design_daily', full_name: 'Design Daily', avatar_url: 'https://ui-avatars.com/api/?name=Design+Daily&background=random' },
+        { username: 'ux_master', full_name: 'UX Master', avatar_url: 'https://ui-avatars.com/api/?name=UX+Master&background=random' },
+        { username: 'code_ninja', full_name: 'Code Ninja', avatar_url: 'https://ui-avatars.com/api/?name=Code+Ninja&background=random' },
+        { username: 'photo_pro', full_name: 'Photo Pro', avatar_url: 'https://ui-avatars.com/api/?name=Photo+Pro&background=random' },
+        { username: 'travel_bug', full_name: 'Travel Bug', avatar_url: 'https://ui-avatars.com/api/?name=Travel+Bug&background=random' }
+    ];
+}
+
+function renderRecommendedUsersStrip() {
+    const users = getRecommendedUsers();
+
+    const userCards = users.map(u => `
+        <div class="shrink-0 w-32 bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col items-center text-center mx-1 snap-center">
+            <img src="${u.avatar_url}" class="w-12 h-12 rounded-full mb-2 object-cover">
+            <h4 class="text-sm font-bold text-main truncate w-full">${u.full_name}</h4>
+            <p class="text-xs text-secondary truncate w-full mb-3">@${u.username}</p>
+            <button class="w-full py-1 text-xs glass-button text-white rounded-lg hover:opacity-90 transition-opacity">
+                Follow
+            </button>
+        </div>
+    `).join('');
+
+    return `
+        <div class="py-4 border-b border-white/10 mb-4 animate-fade-in">
+            <h3 class="text-sm font-bold text-secondary mb-3 px-1 uppercase tracking-wider">Suggested for you</h3>
+            <div class="flex overflow-x-auto pb-2 scrollbar-hide snap-x">
+                ${userCards}
+            </div>
+        </div>
+    `;
 }
 
 function changeView(viewId) {
@@ -2101,11 +2255,11 @@ function renderNotifications(notifications) {
 
             html += `
                 <div onclick="HandleNotificationClick('${n.type}', '${n.post_id || ''}', '${actorName}')" 
-                     class="flex items-center justify-between p-3 bg-surface rounded-xl border border-app hover:bg-hover-bg transition-colors cursor-pointer ${!n.read ? 'border-l-4 border-l-primary' : ''}">
+                     class="flex items-center justify-between p-3 glass-panel rounded-xl border border-white/10 hover:bg-white/5 transition-colors cursor-pointer ${!n.read ? 'border-l-4 border-l-primary' : ''}">
                     <div class="flex items-center space-x-3 flex-1 min-w-0">
                         <div class="relative shrink-0">
                             <img src="${actorAvatar}" class="w-10 h-10 rounded-full object-cover cursor-pointer" onclick="event.stopPropagation(); loadPublicProfile('${actorName}')">
-                            <div class="absolute -bottom-1 -right-1 bg-surface rounded-full p-0.5 border border-app">
+                            <div class="absolute -bottom-1 -right-1 glass-panel rounded-full p-0.5 border border-white/10">
                                 ${icon}
                             </div>
                         </div>
