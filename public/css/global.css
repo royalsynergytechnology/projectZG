@@ -71,12 +71,7 @@
 /* 3. Base Styles & Background */
 /* -------------------------------------------------------------------------- */
 body {
-    background:
-        radial-gradient(circle at 10% 20%, var(--bg-gradient-1) 0%, transparent 50%),
-        radial-gradient(circle at 90% 10%, var(--bg-gradient-3) 0%, transparent 50%),
-        radial-gradient(circle at 50% 90%, var(--bg-gradient-4) 0%, transparent 50%),
-        linear-gradient(135deg, var(--bg-gradient-2) 0%, var(--bg-gradient-3) 100%);
-    background-attachment: fixed;
+    
     background-size: 200% 200%;
     animation: gradientMove 15s ease infinite;
     min-height: 100vh;
