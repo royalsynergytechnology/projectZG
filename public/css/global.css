@@ -9,7 +9,7 @@
     --color-primary: rgb(var(--color-primary-rgb));
 
     /* Glassmorphism Core */
-    --glass-bg: rgba(245, 245, 245, 0.5);
+    --glass-bg: rgba(240, 240, 240, 1.0);
     /* More opaque for 'proper white' feel */
     --glass-border: rgba(255, 255, 255, 0.4);
     --glass-blur: 20px;
